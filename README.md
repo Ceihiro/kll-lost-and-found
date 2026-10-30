@@ -1,20 +1,36 @@
-# KLL Lost and Found
+# KLL Smart Find AI (Lost & Found Portal)
 
-An NLP-based lost-and-found matching system with intelligent ranking for **Kolehiyo ng Lungsod ng Lipa (KLL)**. Built for **CSE 103 Intelligent System**.
+An intelligent, NLP-driven lost-and-found management and matching system designed for **Kolehiyo ng Lungsod ng Lipa (KLL)**. Built for **CSE 103 Intelligent System**.
 
-Someone reports a lost item, staff log a found item, and the system suggests the most likely matches using a hybrid AI score. Staff verify the owner before releasing the item.
+Students report lost items or staff log found items, and the system ranks the most probable matches using a hybrid scoring model (Rule-Based Attribute Weighting + TF-IDF Cosine Similarity with Taglish normalization). Authorized staff review, update, and verify ownership before releasing items.
+
+---
+
+## Key Features
+
+- **Hybrid AI Matching Engine:** 50% Rule-Based attribute matching + 50% NLP text similarity with Tagalog/Taglish vocabulary normalization (`payong` $\rightarrow$ `umbrella`, `pitaka` $\rightarrow$ `wallet`, etc.).
+- **100% Accuracy Benchmark:** Tested across 22 lost reports and 27 found reports achieving **100% Top-1 and 100% Top-3 accuracy**.
+- **Complete Staff CRUD:** Full Create, Read, Update, and Delete capabilities for authorized staff to correct typos, reassign custody, or purge invalid/duplicate entries.
+- **Adaptive Machine Learning Feedback Loop:** Analyzes confirmed true claims to calculate suggested attribute weights and allows staff to refine the matching engine via `learned_weights.json`.
+- **Visual Analytics Dashboard:** Real-time KPI summary cards and interactive Chart.js visualizations (Category Distribution, Top Loss Hotspots, Status Breakdown).
+- **Institutional BBGU-Inspired UI:** Vladivostok State University (BBGU) style solid header with downward notch arch, Dark Maroon (`#6B0020`) and Floral White (`#FFFAF0`) palette, floating toast notifications, and smooth fluid page flow with auto-locking sections.
+- **Dynamic "Other" Input Support:** Category, Color, and Location dropdowns reveal custom input fields when selecting "Other", which seamlessly feed into attribute comparisons and TF-IDF text vectors.
+
+---
 
 ## Screenshots
 
-| Home | Report a lost item | Possible matches |
+| Home (Campus Portal) | Report a Lost Item | Possible AI Matches |
 | --- | --- | --- |
 | ![Home page](docs/screenshots/home.png) | ![Report a lost item](docs/screenshots/report-lost.png) | ![Possible matches](docs/screenshots/matches.png) |
 
-## Quick start (Windows)
+---
 
-You need **Python 3.13** and **Git**. See [SETUP.md](SETUP.md) for full instructions.
+## Quick Start (Windows)
 
-```
+Prerequisites: **Python 3.10+** (tested on Python 3.13) and **Git**. See [SETUP.md](SETUP.md) for full setup instructions.
+
+```powershell
 mkdir C:\dev
 cd C:\dev
 git clone https://github.com/Ceihiro/kll-lost-and-found.git
@@ -26,67 +42,82 @@ python seed_data.py
 python app.py
 ```
 
-Open **http://127.0.0.1:5000** in your browser. Press **Ctrl + C** to stop.
+Open **http://127.0.0.1:5000** in your browser. Press **Ctrl + C** to terminate the server.
 
-Every time you come back: `cd C:\dev\kll-lost-and-found`, `venv\Scripts\activate`, `git pull`, `python app.py`.
+Every subsequent session:
+```powershell
+cd C:\dev\kll-lost-and-found
+venv\Scripts\activate
+python app.py
+```
 
-## How the matching works
+---
 
-Each found item gets two scores, mixed 50/50 (adjustable in `config.py`):
+## How the Matching Engine Works
 
-| Score | Method | How |
+Each candidate item is evaluated across two complementary dimensions mixed 50/50 (configurable in `config.py`):
+
+| Score Dimension | Method | Implementation Details |
 |---|---|---|
-| **Attribute score** | Rule-based | Compares category, color, brand, location, and time. Blank fields are skipped and the remaining weights are rescaled. |
-| **Text score** | NLP (AI) | TF-IDF vectorization + cosine similarity on the description text, using scikit-learn. |
+| **Attribute Score** | Rule-Based | Compares category, color, brand, campus location, and event time window. Missing optional attributes are dynamically excluded and weights are proportionally rescaled. |
+| **Text Score** | NLP (AI) | Scikit-learn TF-IDF vectorizer + Cosine Similarity. Includes built-in Tagalog/Taglish normalization and campus stop-word filtering. |
 
-The top 3 matches are shown with the reasons for each. Weights are in `config.py`.
+### Evaluation Benchmark Results (`evaluate.py`)
 
-### Accuracy results (evaluated on 20 lost / 25 found reports)
+Evaluated offline on **22 lost reports** and **27 found reports**:
 
-| Method | Top-1 | Top-3 |
+| Method | Top-1 Accuracy | Top-3 Accuracy |
 |---|---|---|
-| Attribute only | 100% | 100% |
-| Text only | 85% | 100% |
-| **Combined** | **100%** | **100%** |
+| Attribute Only | 100% | 100% |
+| Text (NLP) Only | 100% | 100% |
+| **Combined (Hybrid)** | **100%** | **100%** |
 
-Text-only misses 3 out of 20 at top-1 because Taglish descriptions (e.g. *payong*, *tumbler*, *may sticker*) reduce cosine similarity when wording differs between the lost and found reports. The combined method catches all 20.
+Run the benchmark at any time:
+```powershell
+python evaluate.py
+```
 
-## Pages
+---
 
-| URL | Who | What |
+## Web Routes & Permissions
+
+| Route | Role | Description |
 |---|---|---|
-| `/` | Public | Home — open lost reports and found items |
-| `/lost` | Public | Report a lost item |
-| `/found` | Public | Log a found item |
-| `/matches/<id>` | Public | Top matches for a lost report |
-| `/staff/login` | Staff | Login page |
-| `/staff/logout` | Staff | Clears the session |
-| `/staff/dashboard` | Staff only | All items, overdue reminders, claim history |
-| `/staff/export` | Staff only | Download all items as CSV |
-| `/claim` | Staff only | Record a verification outcome |
+| `/` | Public | Homepage — Browse active lost reports and open found catalog |
+| `/lost` | Public | Submit a lost item report |
+| `/found` | Public / Staff | Log a found item (includes private verification details) |
+| `/matches/<lost_id>` | Public / Staff | Ranked AI matches for a specific lost item |
+| `/staff/login` | Staff | Authenticate staff credentials stored securely in `.env` |
+| `/staff/logout` | Staff | Invalidate staff session |
+| `/staff/dashboard` | Staff Only | Complete dashboard: KPIs, overdue alerts, charts, inventory table, and AI weight tuning |
+| `/staff/edit/<item_id>` | Staff Only | **CRUD Update:** Edit any field, status, or custody detail of an item |
+| `/staff/delete/<item_id>` | Staff Only | **CRUD Delete:** Permanently remove an item and associated claims |
+| `/staff/mark_unclaimed` | Staff Only | Transition an item to `unclaimed` archive status |
+| `/staff/apply_weights` | Staff Only | Apply feedback-learned weights from verified claims to `learned_weights.json` |
+| `/staff/export` | Staff Only | Export full inventory as CSV |
+| `/claim` | Staff Only | Record student ownership verification outcome (`Verified`, `Not Verified`, `Pending`) |
 
-## Files
+---
 
-| File | What it does | Role |
+## Project Structure
+
+| File / Folder | Purpose | Team Role |
 |---|---|---|
-| `app.py` | All URL routes and form handling | Backend coder |
-| `db.py` | SQLite database — items and claims tables | Database designer |
-| `matching.py` | Attribute score + TF-IDF ranking | NLP / AI reviewer |
-| `config.py` | Categories, rooms, colors, weights | Everyone |
-| `evaluate.py` | Accuracy benchmark (top-1 / top-3) | Tester / QA |
-| `data/` | Test CSV files for evaluate.py | Data collector |
-| `templates/` | HTML page templates | UI/UX reviewer |
-| `static/style.css` | Page styles | UI/UX reviewer |
-| `seed_data.py` | Loads sample data into the database | — |
-| `test.py` | Quick library check after setup | — |
+| `app.py` | Flask routes, form validation, CSRF & authentication guards | Backend Developer |
+| `db.py` | SQLite database schema, CRUD operations, analytics aggregation, and ML feedback calculator | Database Designer |
+| `matching.py` | Hybrid matching engine: rule weights, Taglish translation, TF-IDF cosine ranking | NLP / AI Reviewer |
+| `config.py` | Central configuration: categories, locations, colors, and initial attribute weights | Systems Analyst |
+| `evaluate.py` | Automated Top-1 and Top-3 accuracy benchmark test harness | QA Tester |
+| `data/` | Benchmark test datasets (`lost_reports.csv`, `found_reports.csv`, `true_matches.csv`) | Data Collector |
+| `templates/` | Jinja2 templates (dashboard, forms, matches, home) | UI/UX Designer |
+| `static/style.css` | Institutional design system, BBGU header/footer curves, responsive layouts | UI/UX Designer |
+| `seed_data.py` | Database seeder for demo & testing | Backend Developer |
 
-## Security notes
+---
 
-- `SECRET_KEY` and staff credentials are in `.env` (never committed to GitHub).
-- Every form is protected by a CSRF token (Flask-WTF).
-- The `/claim`, `/staff/dashboard`, and `/staff/export` routes require staff login.
+## Security & Privacy Measures
 
-## Still to build
-
-- Feedback buttons that adjust the matching weights based on staff corrections
-- Mobile-friendly UI redesign
+- **Environment Secrets:** Sensitive credentials (`STAFF_USERNAME`, `STAFF_PASSWORD`, `SECRET_KEY`) reside in `.env` and are strictly excluded from git.
+- **CSRF Defense:** All state-changing forms (`POST`) require valid CSRF tokens verified via Flask-WTF.
+- **Blind Verification Detail:** Found items store a `private_detail` (e.g. scratch, serial number, inside sticker) hidden from the public view; staff verify this before confirming ownership.
+- **Role-Based Access Control:** Edit, Delete, Claim Verification, CSV export, and Analytics dashboards are strictly gated behind `@staff_required`.
