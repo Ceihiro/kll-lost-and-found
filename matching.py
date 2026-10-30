@@ -222,6 +222,15 @@ def _normalize(text):
 
 # ── Small helpers ──────────────────────────────────────────────────────────
 
+def _get(item, key, default=""):
+    """Safely get a field from a dict, sqlite3.Row, or similar mapping object."""
+    try:
+        val = item[key]
+        return val if val is not None else default
+    except (KeyError, IndexError, TypeError):
+        return default
+
+
 def _norm(value):
     """Lowercase and strip whitespace so comparisons are case-insensitive."""
     return (value or "").strip().lower()
@@ -264,36 +273,42 @@ def attribute_score(lost, found):
     reasons = []     # human-readable match reasons
 
     # ── Category ──────────────────────────────────────────────────────────
-    if _norm(lost["category"]) and _norm(found["category"]):
-        same = _norm(lost["category"]) == _norm(found["category"])
+    l_cat, f_cat = _get(lost, "category"), _get(found, "category")
+    if _norm(l_cat) and _norm(f_cat):
+        same = _norm(l_cat) == _norm(f_cat)
         parts["category"] = 1.0 if same else 0.0
         if same:
-            reasons.append(f"Same category: {found['category']}")
+            reasons.append(f"Same category: {f_cat}")
 
     # ── Color ─────────────────────────────────────────────────────────────
-    if _norm(lost["color"]) and _norm(found["color"]):
-        same = _norm(lost["color"]) == _norm(found["color"])
+    l_col, f_col = _get(lost, "color"), _get(found, "color")
+    if _norm(l_col) and _norm(f_col):
+        same = _norm(l_col) == _norm(f_col)
         parts["color"] = 1.0 if same else 0.0
         if same:
-            reasons.append(f"Same color: {found['color']}")
+            reasons.append(f"Same color: {f_col}")
 
     # ── Brand ─────────────────────────────────────────────────────────────
-    if _norm(lost["brand"]) and _norm(found["brand"]):
-        same = _norm(lost["brand"]) == _norm(found["brand"])
+    l_brand, f_brand = _get(lost, "brand"), _get(found, "brand")
+    if _norm(l_brand) and _norm(f_brand):
+        same = _norm(l_brand) == _norm(f_brand)
         parts["brand"] = 1.0 if same else 0.0
         if same:
-            reasons.append(f"Same brand: {found['brand']}")
+            reasons.append(f"Same brand: {f_brand}")
 
     # ── Location ──────────────────────────────────────────────────────────
-    if _norm(lost["location"]) and _norm(found["location"]):
-        same = _norm(lost["location"]) == _norm(found["location"])
+    l_loc, f_loc = _get(lost, "location"), _get(found, "location")
+    if _norm(l_loc) and _norm(f_loc):
+        norm_lost = _norm(l_loc)
+        norm_found = _norm(f_loc)
+        same = (norm_lost == norm_found) or (norm_lost in norm_found) or (norm_found in norm_lost)
         parts["location"] = 1.0 if same else 0.0
         if same:
-            reasons.append(f"Same location: {found['location']}")
+            reasons.append(f"Same location: {f_loc}")
 
     # ── Time ──────────────────────────────────────────────────────────────
     # Score decays linearly from 1.0 (same time) to 0.0 (at TIME_WINDOW_HOURS).
-    hours = _hours_apart(lost["event_time"], found["event_time"])
+    hours = _hours_apart(_get(lost, "event_time"), _get(found, "event_time"))
     if hours is not None:
         parts["time"] = max(0.0, 1.0 - hours / config.TIME_WINDOW_HOURS)
         if hours <= config.TIME_WINDOW_HOURS:
@@ -328,10 +343,11 @@ def _doc(item):
     With _normalize(), both map to "umbrella" → similarity = high.
     """
     raw = " ".join([
-        item["category"]    or "",
-        item["color"]       or "",
-        item["brand"]       or "",
-        item["description"] or "",
+        _get(item, "category"),
+        _get(item, "color"),
+        _get(item, "brand"),
+        _get(item, "description"),
+        _get(item, "location"),
     ])
     # _normalize() does: lowercase → synonym replacement → stop word removal
     return _normalize(raw)

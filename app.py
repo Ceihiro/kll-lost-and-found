@@ -80,13 +80,31 @@ def _form_item(kind):
     'kind' is either 'lost' or 'found'.
     """
     f = request.form
+    category = f.get("category", "").strip()
+    if category == "Other":
+        cat_other = f.get("category_other", "").strip()
+        if cat_other:
+            category = f"Other ({cat_other})"
+
+    color = f.get("color", "").strip()
+    if color == "Other":
+        col_other = f.get("color_other", "").strip()
+        if col_other:
+            color = f"Other ({col_other})"
+
+    location = f.get("location", "").strip()
+    if location == "Other":
+        loc_other = f.get("location_other", "").strip()
+        if loc_other:
+            location = f"Other ({loc_other})"
+
     return dict(
         kind=kind,
-        category=f.get("category",    "").strip(),
-        color=   f.get("color",       "").strip(),
+        category=category,
+        color=color,
         brand=   f.get("brand",       "").strip(),
-        description=f.get("description", "").strip(),
-        location=f.get("location",    "").strip(),
+        description=f.get("description", "").strip()[:500],
+        location=location,
         event_time=f.get("event_time","").strip(),
     )
 
@@ -124,6 +142,16 @@ def report_lost():
     if request.method == "POST":
         data = _form_item("lost")
 
+        # Read student identity fields
+        reporter_name    = request.form.get("reporter_name", "").strip()
+        reporter_id      = request.form.get("reporter_id", "").strip()
+        reporter_section = request.form.get("reporter_section", "").strip()
+
+        if reporter_name:
+            contact = f"{reporter_name} | ID: {reporter_id} | {reporter_section}"
+        else:
+            contact = request.form.get("contact", "").strip()
+
         # Basic validation before saving to the database.
         if not data["description"] or not data["event_time"]:
             flash("Please fill in the description and the date/time.")
@@ -132,7 +160,7 @@ def report_lost():
         else:
             lost_id = db.add_item(
                 **data,
-                contact=request.form.get("contact", "").strip()
+                contact=contact
             )
             # After saving, immediately show the matching results.
             return redirect(url_for("matches", lost_id=lost_id))
@@ -253,6 +281,80 @@ def mark_unclaimed():
     item_id = int(request.form["item_id"])
     db.update_item_status(item_id, "unclaimed")
     flash("Item marked as unclaimed.")
+    return redirect(url_for("staff_dashboard"))
+
+
+@app.route("/staff/edit/<int:item_id>", methods=["GET", "POST"])
+@staff_required
+def staff_edit(item_id):
+    """Staff only: edit any field of an existing lost or found item."""
+    item = db.get_item(item_id)
+    if not item:
+        flash("Item not found.")
+        return redirect(url_for("staff_dashboard"))
+
+    if request.method == "POST":
+        f = request.form
+        category = f.get("category", "").strip()
+        if category == "Other":
+            cat_other = f.get("category_other", "").strip()
+            if cat_other:
+                category = f"Other ({cat_other})"
+
+        color = f.get("color", "").strip()
+        if color == "Other":
+            col_other = f.get("color_other", "").strip()
+            if col_other:
+                color = f"Other ({col_other})"
+
+        location = f.get("location", "").strip()
+        if location == "Other":
+            loc_other = f.get("location_other", "").strip()
+            if loc_other:
+                location = f"Other ({loc_other})"
+
+        brand = f.get("brand", "").strip()
+        description = f.get("description", "").strip()[:500]
+        event_time = f.get("event_time", "").strip()
+        status = f.get("status", item["status"]).strip()
+        contact = f.get("contact", "").strip()
+        storage_place = f.get("storage_place", "").strip()
+        private_detail = f.get("private_detail", "").strip()
+
+        if not description or not event_time:
+            flash("Description and Date & Time cannot be empty.")
+        elif not _validate_time(event_time):
+            flash("Invalid date/time format.")
+        else:
+            db.update_item(
+                item_id=item_id,
+                category=category,
+                color=color,
+                brand=brand,
+                description=description,
+                location=location,
+                event_time=event_time,
+                status=status,
+                contact=contact,
+                storage_place=storage_place,
+                private_detail=private_detail,
+            )
+            flash(f"Item #{item_id} updated successfully.")
+            return redirect(url_for("staff_dashboard"))
+
+    return render_template("staff_edit.html", item=item, cfg=config)
+
+
+@app.route("/staff/delete/<int:item_id>", methods=["POST"])
+@staff_required
+def staff_delete(item_id):
+    """Staff only: permanently delete an item and its linked claim records."""
+    item = db.get_item(item_id)
+    if not item:
+        flash("Item not found.")
+    else:
+        db.delete_item(item_id)
+        flash(f"Item #{item_id} permanently deleted.")
     return redirect(url_for("staff_dashboard"))
 
 

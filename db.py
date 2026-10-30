@@ -324,6 +324,32 @@ def update_item_status(item_id, status):
         )
 
 
+def update_item(item_id, category, color, brand, description, location,
+                event_time, status=None, contact=None, storage_place=None, private_detail=None):
+    """Update all editable fields for an existing item in the database.
+    Used by authorized staff to correct typos, update custody, or adjust status.
+    """
+    with get_conn() as conn:
+        conn.execute(
+            """UPDATE items
+               SET category = ?, color = ?, brand = ?, description = ?,
+                   location = ?, event_time = ?, status = COALESCE(?, status),
+                   contact = ?, storage_place = ?, private_detail = ?
+               WHERE id = ?""",
+            (category, color, brand, description, location,
+             event_time, status, contact, storage_place, private_detail, item_id),
+        )
+
+
+def delete_item(item_id):
+    """Permanently delete an item and any linked claims from the database.
+    Used by authorized staff to purge spam, duplicates, or test entries.
+    """
+    with get_conn() as conn:
+        conn.execute("DELETE FROM claims WHERE lost_id = ? OR found_id = ?", (item_id, item_id))
+        conn.execute("DELETE FROM items WHERE id = ?", (item_id,))
+
+
 def record_claim(lost_id, found_id, outcome, notes=""):
     """Save a staff verification result in the claims table.
 

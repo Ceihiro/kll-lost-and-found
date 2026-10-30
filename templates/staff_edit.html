@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Item #{{ item.id }} — KLL Smart Find AI{% endblock %}
+
+{% block content %}
+<div class="form-container">
+  <div class="card">
+    <div style="margin-bottom: 1.5rem;">
+      <span class="dash-kicker" style="display: inline-block; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--maroon); margin-bottom: 0.35rem;">
+        STAFF INVENTORY MANAGEMENT
+      </span>
+      <h1 style="margin: 0; font-size: 1.625rem; font-weight: 800; color: #111827;">
+        Edit Item #{{ item.id }}
+        {% if item.kind == 'lost' %}
+          <span class="kind-pill kind-pill--lost" style="font-size: 0.75rem; vertical-align: middle; margin-left: 0.5rem;">Lost Item</span>
+        {% else %}
+          <span class="kind-pill kind-pill--found" style="font-size: 0.75rem; vertical-align: middle; margin-left: 0.5rem;">Found Item</span>
+        {% endif %}
+      </h1>
+      <p style="margin: 0.35rem 0 0; color: var(--muted); font-size: 0.9375rem;">
+        Update item details, location, status, or custody information. Changes save immediately to the database.
+      </p>
+    </div>
+
+    <form method="post" action="{{ url_for('staff_edit', item_id=item.id) }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+      {# Status Dropdown #}
+      <label>Status
+        <select name="status" id="field-status" required>
+          <option value="open" {% if item.status == 'open' %}selected{% endif %}>Open (Active / Searching)</option>
+          <option value="returned" {% if item.status == 'returned' %}selected{% endif %}>Returned (Resolved &amp; Claimed)</option>
+          <option value="unclaimed" {% if item.status == 'unclaimed' %}selected{% endif %}>Unclaimed (Archived in Storage)</option>
+        </select>
+      </label>
+
+      {# Category #}
+      {% set cat_is_other = (item.category not in cfg.CATEGORIES and item.category) or item.category == 'Other' or item.category.startswith('Other (') %}
+      {% set cat_other_text = item.category[7:-1] if item.category.startswith('Other (') else ('' if item.category == 'Other' else (item.category if cat_is_other else '')) %}
+      <label>Category
+        <select name="category" id="field-category" required onchange="handleSelectOther(this, 'category-other-wrap')">
+          {% for c in cfg.CATEGORIES %}
+            {% if c == 'Other' %}
+              <option value="Other" {% if cat_is_other %}selected{% endif %}>Other</option>
+            {% else %}
+              <option value="{{ c }}" {% if item.category == c %}selected{% endif %}>{{ c }}</option>
+            {% endif %}
+          {% endfor %}
+        </select>
+        <div id="category-other-wrap" style="{% if not cat_is_other %}display: none;{% endif %} margin-top: 0.5rem;">
+          <input name="category_other" id="field-category-other" value="{{ cat_other_text }}" placeholder="Specify item category (e.g. Earphones, Jacket, Helmet)">
+        </div>
+      </label>
+
+      {# Color #}
+      {% set col_is_other = (item.color not in cfg.COLORS and item.color) or item.color == 'Other' or item.color.startswith('Other (') %}
+      {% set col_other_text = item.color[7:-1] if item.color.startswith('Other (') else ('' if item.color == 'Other' else (item.color if col_is_other else '')) %}
+      <label>Color
+        <select name="color" id="field-color" onchange="handleSelectOther(this, 'color-other-wrap')">
+          {% for c in cfg.COLORS %}
+            {% if c == 'Other' %}
+              <option value="Other" {% if col_is_other %}selected{% endif %}>Other</option>
+            {% else %}
+              <option value="{{ c }}" {% if item.color == c %}selected{% endif %}>{{ c }}</option>
+            {% endif %}
+          {% endfor %}
+        </select>
+        <div id="color-other-wrap" style="{% if not col_is_other %}display: none;{% endif %} margin-top: 0.5rem;">
+          <input name="color_other" id="field-color-other" value="{{ col_other_text }}" placeholder="Specify color (e.g. Teal, Maroon, Camouflage)">
+        </div>
+      </label>
+
+      {# Brand #}
+      <label>Brand (optional)
+        <input name="brand" value="{{ item.brand or '' }}" placeholder="e.g. Casio, Apple, Hydro Flask">
+      </label>
+
+      {# Description #}
+      <label>Description
+        <textarea name="description" id="field-desc" rows="3" required maxlength="500" placeholder="Detailed physical description">{{ item.description or '' }}</textarea>
+        <small style="color: var(--muted); font-size: 0.8125rem; font-weight: normal; margin-top: -0.2rem;"><span id="desc-count">{{ (item.description or '') | length }}</span> / 500 characters</small>
+      </label>
+
+      {# Room / Location #}
+      {% set loc_is_other = (item.location not in cfg.LOCATIONS and item.location) or item.location == 'Other' or item.location.startswith('Other (') %}
+      {% set loc_other_text = item.location[7:-1] if item.location.startswith('Other (') else ('' if item.location == 'Other' else (item.location if loc_is_other else '')) %}
+      <label>Room / location
+        <select name="location" id="field-location" required onchange="handleSelectOther(this, 'location-other-wrap')">
+          {% for l in cfg.LOCATIONS %}
+            {% if l == 'Other' %}
+              <option value="Other" {% if loc_is_other %}selected{% endif %}>Other</option>
+            {% else %}
+              <option value="{{ l }}" {% if item.location == l %}selected{% endif %}>{{ l }}</option>
+            {% endif %}
+          {% endfor %}
+        </select>
+        <div id="location-other-wrap" style="{% if not loc_is_other %}display: none;{% endif %} margin-top: 0.5rem;">
+          <input name="location_other" id="field-location-other" value="{{ loc_other_text }}" placeholder="Specify room or area (e.g. Canteen, Library, Gym, Gate 1)">
+        </div>
+      </label>
+
+      {# Date and Time #}
+      <label>Date and time
+        <input type="datetime-local" name="event_time" id="field-event-time" value="{{ item.event_time }}" required>
+      </label>
+
+      {# Kind-specific fields #}
+      {% if item.kind == 'lost' %}
+        <label>Reporter / Student Contact Info
+          <input name="contact" value="{{ item.contact or '' }}" placeholder="Student Name | ID Number | Program / Section">
+        </label>
+      {% else %}
+        <label>Where is it kept now? (Storage place)
+          <input name="storage_place" value="{{ item.storage_place or '' }}" placeholder="e.g. Faculty room cabinet, Guard house shelf">
+        </label>
+        <label>Private verification detail (hidden from public)
+          <input name="private_detail" value="{{ item.private_detail or '' }}" placeholder="e.g. sticker on the back, custom keychain, engraved initials">
+        </label>
+      {% endif %}
+
+      <div style="display: flex; gap: 0.75rem; margin-top: 1.5rem; align-items: center;">
+        <button type="submit" class="btn btn--primary" style="flex: 1;">Save Changes</button>
+        <a href="{{ url_for('staff_dashboard') }}" class="btn btn--secondary" style="text-decoration: none; text-align: center;">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+function handleSelectOther(selectEl, wrapId) {
+  var wrap = document.getElementById(wrapId);
+  if (!wrap) return;
+  if (selectEl.value === 'Other') {
+    wrap.style.display = 'block';
+  } else {
+    wrap.style.display = 'none';
+    var inp = wrap.querySelector('input');
+    if (inp) inp.value = '';
+  }
+}
+
+(function() {
+  var desc = document.getElementById('field-desc');
+  var cnt = document.getElementById('desc-count');
+  if (desc && cnt) {
+    desc.addEventListener('input', function() {
+      cnt.textContent = desc.value.length;
+    });
+  }
+
+  var dt = document.getElementById('field-event-time');
+  if (dt) {
+    var now = new Date();
+    var pad = function(n) { return String(n).padStart(2, '0'); };
+    var maxStr = now.getFullYear() + '-' + pad(now.getMonth()+1) + '-' + pad(now.getDate()) + 'T' + pad(now.getHours()) + ':' + pad(now.getMinutes());
+    var minDate = new Date(now);
+    minDate.setFullYear(minDate.getFullYear() - 5);
+    var minStr = minDate.getFullYear() + '-' + pad(minDate.getMonth()+1) + '-' + pad(minDate.getDate()) + 'T00:00';
+    dt.max = maxStr;
+    dt.min = minStr;
+  }
+})();
+</script>
+{% endblock %}
+

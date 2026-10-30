@@ -1,32 +1,367 @@
+<!--
+  FILE: base.html
+  PURPOSE: Master layout template for KLL Lost and Found.
+
+  CSE 103 – Intelligent System | Kolehiyo ng Lungsod ng Lipa
+-->
 <!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{% block title %}KLL Lost and Found{% endblock %}</title>
+    <title>{% block title %}KLL Smart Find AI{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
     <link
       rel="stylesheet"
       href="{{ url_for('static', filename='style.css') }}"
     />
   </head>
-  <body>
-    <header>
-      <a class="brand" href="{{ url_for('index') }}">KLL Lost and Found</a>
-      <nav>
-        <a href="{{ url_for('report_lost') }}">I lost something</a>
-        <a href="{{ url_for('log_found') }}">I found something</a>
-        {% if session.get('staff') %}
-        <a href="{{ url_for('staff_dashboard') }}" class="nav-staff">Dashboard</a>
-        <a href="{{ url_for('staff_logout') }}" class="nav-staff">Logout</a>
-        {% else %}
-        <a href="{{ url_for('staff_login') }}" class="nav-staff">Staff login</a>
-        {% endif %}
-      </nav>
+  <body class="{% block body_class %}{% endblock %}">
+    <!-- ══════════════════════════════════════════════════════════
+     HEADER
+     ══════════════════════════════════════════════════════════ -->
+    <header class="site-header">
+      <!-- ── Top Maroon Bar ───────────────────────────────────── -->
+      <div class="header-top-bar">
+        <div class="header-top-inner container">
+          <!-- Left: Institutional Branding -->
+          <a class="header-brand" href="{{ url_for('index') }}">
+            <span class="brand-institution">KOLEHIYO NG LUNGSOD NG LIPA</span>
+            <span class="brand-portal">Smart Find AI</span>
+          </a>
+
+          <!-- Center: Curved White Notch Container -->
+          <div class="header-notch-container">
+            <div class="header-notch-arch">
+              <a
+                href="{{ url_for('index') }}"
+                class="header-notch-link"
+                title="KLL Home"
+              >
+                <img
+                  src="{{ url_for('static', filename='images/KLL-logo.webp') }}"
+                  alt="KLL Logo"
+                  class="header-notch-logo"
+                  onerror="this.style.display = 'none'"
+                />
+              </a>
+            </div>
+          </div>
+
+          <!-- Right: Staff Login Button -->
+          <div class="header-top-actions">
+            {% if session.get('staff') %}
+            <a
+              href="{{ url_for('staff_dashboard') }}"
+              class="nav-pill nav-pill--active"
+              >Dashboard</a
+            >
+            <a
+              href="{{ url_for('staff_logout') }}"
+              class="nav-pill nav-pill--ghost"
+              >Logout</a
+            >
+            {% else %}
+            <a
+              href="{{ url_for('staff_login') }}"
+              class="nav-pill nav-pill--staff"
+              >Staff Login</a
+            >
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Bottom Single-Row Navigation Bar (Distributed Left-to-Right) ── -->
+      <div class="header-nav-bar">
+        <div class="header-nav-inner container">
+          <nav class="main-navigation">
+            <a
+              href="{{ url_for('report_lost') }}"
+              class="nav-link {% if request.endpoint == 'report_lost' %}nav-link--active{% endif %}"
+              >Report Lost Item</a
+            >
+            <a
+              href="{{ url_for('log_found') }}"
+              class="nav-link {% if request.endpoint == 'log_found' %}nav-link--active{% endif %}"
+              >Log Found Item</a
+            >
+            <!-- Clearance gap prevents nav text from ever touching/overlapping center logo -->
+            <div class="nav-logo-clearance" aria-hidden="true"></div>
+            <a
+              href="{{ url_for('index') }}"
+              class="nav-link {% if request.endpoint == 'index' %}nav-link--active{% endif %}"
+              id="nav-home"
+              >Home</a
+            >
+            <a
+              href="{{ url_for('index') }}#how-it-works"
+              class="nav-link"
+              id="nav-how-it-works"
+              >How It Works</a
+            >
+            <a href="{{ url_for('index') }}#faq" class="nav-link" id="nav-faq"
+              >FAQ</a
+            >
+          </nav>
+        </div>
+      </div>
     </header>
-    <main>
-      {% with messages = get_flashed_messages() %} {% for m in messages %}
-      <p class="flash">{{ m }}</p>
-      {% endfor %} {% endwith %} {% block content %}{% endblock %}
+    <!-- END HEADER -->
+
+    <!-- ══════════════════════════════════════════════════════════
+     FLASH TOAST NOTIFICATIONS (AUTO-DISMISSING)
+     ══════════════════════════════════════════════════════════ -->
+    {% with messages = get_flashed_messages() %} {% if messages %}
+    <div class="flash-toast-container" id="flash-container">
+      {% for m in messages %}
+      <div class="flash-toast">
+        <span class="flash-toast-icon">ℹ</span>
+        <span class="flash-toast-text">{{ m }}</span>
+        <button
+          type="button"
+          class="flash-toast-close"
+          onclick="this.parentElement.remove()"
+          aria-label="Close"
+        >
+          &times;
+        </button>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %} {% endwith %}
+
+    <!-- ══════════════════════════════════════════════════════════
+     MAIN CONTENT
+     ══════════════════════════════════════════════════════════ -->
+    <main class="{% block main_class %}page-main{% endblock %}">
+      {% block content %}{% endblock %}
     </main>
+
+    <!-- ══════════════════════════════════════════════════════════
+     FOOTER — INVERTED EMBLEM ARCH & DIRECTORY
+     ══════════════════════════════════════════════════════════ -->
+    <footer class="site-footer">
+      <!-- Footer Directory Columns -->
+      <div class="footer-columns container">
+        <div class="footer-col">
+          <h4>KLL Smart Find AI</h4>
+          <p>
+            An NLP-based lost and found system with intelligent ranking for the
+            Kolehiyo ng Lungsod ng Lipa campus community.
+          </p>
+        </div>
+
+        <div class="footer-col">
+          <h4>Quick Links</h4>
+          <ul>
+            <li>
+              <a href="{{ url_for('report_lost') }}">Report a Lost Item</a>
+            </li>
+            <li><a href="{{ url_for('log_found') }}">Log a Found Item</a></li>
+            <li>
+              <a href="{{ url_for('index') }}#how-it-works">How It Works</a>
+            </li>
+            <li>
+              <a href="{{ url_for('index') }}#faq"
+                >Frequently Asked Questions</a
+              >
+            </li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4>Campus Address</h4>
+          <p>
+            Kolehiyo ng Lungsod ng Lipa<br />
+            J.P. Laurel Highway, Marawoy<br />
+            Lipa City, Batangas 4217
+          </p>
+        </div>
+
+        <div class="footer-col">
+          <h4>Contact &amp; Support</h4>
+          <p>Registrar: (043) 756-5436</p>
+          <p>Security &amp; Guard Office: Local 104</p>
+          <p>Email: lostandfound@kll.edu.ph</p>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <div class="container">
+          <p>
+            &copy; 2026 Kolehiyo ng Lungsod ng Lipa &mdash; Smart Find AI
+            System. All rights reserved.
+          </p>
+        </div>
+      </div>
+    </footer>
+    <!-- END FOOTER -->
+
+    <!-- ══════════════════════════════════════════════════════════
+     DYNAMIC NAV ACTIVE UNDERLINE & IDLE AUTO-SCROLL LOCK
+     ══════════════════════════════════════════════════════════ -->
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        // Auto-dismiss flash notifications smoothly after 3.5 seconds
+        document.querySelectorAll(".flash-toast").forEach((toast) => {
+          setTimeout(() => {
+            toast.classList.add("flash-toast--fadeout");
+            setTimeout(() => toast.remove(), 400);
+          }, 3500);
+        });
+
+        const isHomePage = document.body.classList.contains("page-home");
+        const navHome = document.getElementById("nav-home");
+        const navHow = document.getElementById("nav-how-it-works");
+        const navFaq = document.getElementById("nav-faq");
+        const header = document.querySelector(".site-header");
+
+        if (!isHomePage || !navHome || !navHow || !navFaq) return;
+
+        const getHeaderHeight = () => (header ? header.offsetHeight : 134);
+
+        const sections = [
+          { id: "hero", nav: navHome },
+          { id: "items", nav: navHome },
+          { id: "how-it-works", nav: navHow },
+          { id: "faq", nav: navFaq },
+        ];
+
+        function setActiveNav(targetLink) {
+          [navHome, navHow, navFaq].forEach((link) => {
+            if (link) link.classList.remove("nav-link--active");
+          });
+          if (targetLink) targetLink.classList.add("nav-link--active");
+        }
+
+        // Smooth click scroll without peeking for nav links and in-page anchor cards
+        document.querySelectorAll('a[href*="#"]').forEach((link) => {
+          link.addEventListener("click", (e) => {
+            const href = link.getAttribute("href");
+            const hashIdx = href.indexOf("#");
+            if (hashIdx === -1) return;
+            const targetId = href.substring(hashIdx + 1);
+            if (!targetId) return;
+            const targetEl = document.getElementById(targetId);
+
+            if (targetEl) {
+              e.preventDefault();
+              isAutoLocking = true;
+              clearTimeout(scrollEndTimer);
+
+              if (targetId === "how-it-works") setActiveNav(navHow);
+              else if (targetId === "faq") setActiveNav(navFaq);
+              else if (targetId === "hero" || targetId === "items")
+                setActiveNav(navHome);
+
+              const headerH = getHeaderHeight();
+              const targetTop = targetEl.offsetTop - headerH;
+              window.scrollTo({
+                top: Math.max(0, targetTop),
+                behavior: "smooth",
+              });
+              history.replaceState(null, "", "#" + targetId);
+              setTimeout(() => {
+                isAutoLocking = false;
+              }, 600);
+            }
+          });
+        });
+
+        // Track active section and transfer active line on scroll smoothly
+        function updateActiveNavOnScroll() {
+          const scrollPos = window.scrollY + getHeaderHeight() + 120;
+          let currentNav = navHome;
+
+          sections.forEach(({ id, nav }) => {
+            const el = document.getElementById(id);
+            if (el && scrollPos >= el.offsetTop) {
+              currentNav = nav;
+            }
+          });
+
+          setActiveNav(currentNav);
+        }
+
+        // ── Fluid Auto-Lock to Nearest Section on Idle ──
+        let scrollEndTimer = null;
+        let isAutoLocking = false;
+
+        window.addEventListener(
+          "scroll",
+          () => {
+            updateActiveNavOnScroll();
+
+            if (isAutoLocking) return;
+
+            clearTimeout(scrollEndTimer);
+            // 240ms idle delay lets scrolling flow freely with natural momentum without feeling tight
+            scrollEndTimer = setTimeout(() => {
+              smoothLockNearestSection();
+            }, 240);
+          },
+          { passive: true },
+        );
+
+        function smoothLockNearestSection() {
+          // If the user scrolled to the bottom to view the footer, let it rest naturally
+          const maxScroll =
+            document.documentElement.scrollHeight - window.innerHeight;
+          if (window.scrollY >= maxScroll - 60) return;
+
+          const headerH = getHeaderHeight();
+          const snapElements = Array.from(
+            document.querySelectorAll(".snap-section"),
+          );
+          const currentViewportTop = window.scrollY + headerH;
+          let closest = snapElements[0];
+          let minDistance = Infinity;
+
+          snapElements.forEach((el) => {
+            const dist = Math.abs(currentViewportTop - el.offsetTop);
+            if (dist < minDistance) {
+              minDistance = dist;
+              closest = el;
+            }
+          });
+
+          // Auto-adjust smoothly if off by more than 20px
+          if (closest && minDistance > 20) {
+            isAutoLocking = true;
+            const targetY = closest.offsetTop - headerH;
+            window.scrollTo({
+              top: Math.max(0, targetY),
+              behavior: "smooth",
+            });
+            setTimeout(() => {
+              isAutoLocking = false;
+            }, 500);
+          }
+        }
+
+        // Handle direct hash navigation on page load
+        if (window.location.hash) {
+          const targetEl = document.querySelector(window.location.hash);
+          if (targetEl) {
+            setTimeout(() => {
+              const headerH = getHeaderHeight();
+              window.scrollTo({
+                top: Math.max(0, targetEl.offsetTop - headerH),
+                behavior: "smooth",
+              });
+              if (window.location.hash === "#how-it-works")
+                setActiveNav(navHow);
+              else if (window.location.hash === "#faq") setActiveNav(navFaq);
+            }, 120);
+          }
+        }
+      });
+    </script>
   </body>
 </html>

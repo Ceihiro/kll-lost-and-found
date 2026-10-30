@@ -1,35 +1,378 @@
-{% extends "base.html" %}
-{% block content %}
-<h1>Lost and found</h1>
+<!--
+  FILE: index.html
+  PURPOSE: Landing / home page for KLL Lost and Found.
+           Sections:
+             1. Hero – full-screen background + headline + 3 nav cards
+             2. Live items – open lost reports and found items
+             3. How It Works – vertical timeline
+             4. FAQ – 5 frequently asked questions
+           The header and footer come from base.html.
 
-<section>
-  <h2>Open lost reports ({{ lost_items|length }})</h2>
-  {% if lost_items %}
-  <ul class="cards">
-    {% for i in lost_items %}
-    <li>
-      <strong>{{ i.category }}</strong> &middot; {{ i.color }} {% if i.brand %}&middot; {{ i.brand }}{% endif %}<br>
-      {{ i.description }}<br>
-      <small>{{ i.location }} &middot; {{ i.event_time }}</small><br>
-      <a href="{{ url_for('matches', lost_id=i.id) }}">See possible matches</a>
-    </li>
-    {% endfor %}
-  </ul>
-  {% else %}<p>No open lost reports yet.</p>{% endif %}
-</section>
+  CSE 103 – Intelligent System | Kolehiyo ng Lungsod ng Lipa
+-->
+{% extends "base.html" %} {% block title %}KLL Smart Find AI – Home{% endblock
+%} {% block body_class %}page-home{% endblock %} {% block main_class
+%}page-main--full{% endblock %} {% block content %}
 
-<section>
-  <h2>Found items ({{ found_items|length }})</h2>
-  {% if found_items %}
-  <ul class="cards">
-    {% for i in found_items %}
-    <li>
-      <strong>{{ i.category }}</strong> &middot; {{ i.color }} {% if i.brand %}&middot; {{ i.brand }}{% endif %}<br>
-      <small>{{ i.location }} &middot; {{ i.event_time }}</small>
-    </li>
-    {% endfor %}
-  </ul>
-  {% else %}<p>No found items yet.</p>{% endif %}
-  <p><small>Public view: private details and storage place are not shown.</small></p>
+<!-- ══════════════════════════════════════════════════════════
+     SECTION 1: HERO
+     ══════════════════════════════════════════════════════════ -->
+<section class="hero snap-section" id="hero">
+  <!-- Overlay keeps the background image from washing out the text -->
+  <div class="hero-overlay"></div>
+
+  <!-- Hero text block -->
+  <div class="hero-text">
+    <h1>KLL Smart Find AI</h1>
+    <p class="hero-sub">
+      <span class="hero-sub-single"
+        >NLP-based lost and found system with intelligent ranking for Kolehiyo
+        ng Lungsod ng Lipa.</span
+      ><br />
+      Lost something? Found something? Our AI connects you in seconds.
+    </p>
+  </div>
+
+  <!-- ── 3 navigation cards at the bottom of the hero ─────── -->
+  <div class="hero-cards-wrapper">
+    <div class="hero-cards-grid">
+      <!-- Card 1: Report Lost -->
+      <a href="{{ url_for('report_lost') }}" class="hero-card">
+        <div class="hero-card-left">
+          <!-- Placeholder icon: magnifying glass / lost -->
+          <svg
+            class="hero-card-icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <circle cx="11" cy="11" r="7" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            <line x1="8" y1="11" x2="14" y2="11" />
+          </svg>
+        </div>
+        <div class="hero-card-right">
+          <span class="hero-card-title">Report Lost Item</span>
+          <span class="hero-card-sub"
+            >Submit a report for something you lost on campus</span
+          >
+        </div>
+      </a>
+
+      <!-- Card 2: Log Found -->
+      <a href="{{ url_for('log_found') }}" class="hero-card">
+        <div class="hero-card-left">
+          <!-- Placeholder icon: hand holding / found -->
+          <svg
+            class="hero-card-icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M18 8h1a4 4 0 0 1 0 8h-1" />
+            <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z" />
+            <line x1="6" y1="1" x2="6" y2="4" />
+            <line x1="10" y1="1" x2="10" y2="4" />
+            <line x1="14" y1="1" x2="14" y2="4" />
+          </svg>
+        </div>
+        <div class="hero-card-right">
+          <span class="hero-card-title">Log Found Item</span>
+          <span class="hero-card-sub"
+            >Register an item you picked up on campus</span
+          >
+        </div>
+      </a>
+
+      <!-- Card 3: Browse Items -->
+      <a href="#items" class="hero-card">
+        <div class="hero-card-left">
+          <!-- Placeholder icon: list / browse -->
+          <svg
+            class="hero-card-icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <line x1="8" y1="6" x2="21" y2="6" />
+            <line x1="8" y1="12" x2="21" y2="12" />
+            <line x1="8" y1="18" x2="21" y2="18" />
+            <line x1="3" y1="6" x2="3.01" y2="6" />
+            <line x1="3" y1="12" x2="3.01" y2="12" />
+            <line x1="3" y1="18" x2="3.01" y2="18" />
+          </svg>
+        </div>
+        <div class="hero-card-right">
+          <span class="hero-card-title">Browse Items</span>
+          <span class="hero-card-sub"
+            >View all open lost reports and found items</span
+          >
+        </div>
+      </a>
+    </div>
+  </div>
+  <!-- end hero-cards-wrapper -->
 </section>
+<!-- END HERO -->
+
+<!-- ══════════════════════════════════════════════════════════
+     SECTION 2: LIVE ITEMS
+     Shows the current open lost reports and found items
+     pulled directly from the database.
+     ══════════════════════════════════════════════════════════ -->
+<section class="items-section snap-section" id="items">
+  <div class="container">
+    <!-- Lost Reports -->
+    <div class="items-col">
+      <h2 class="section-heading">
+        <span class="heading-dot heading-dot--red"></span>
+        Open Lost Reports
+        <span class="items-count">({{ lost_items|length }})</span>
+      </h2>
+
+      {% if lost_items %}
+      <div class="item-cards-scroll">
+        <ul class="item-cards">
+          {% for i in lost_items %}
+          <li class="item-card">
+            <div class="item-card-badge">{{ i.category }}</div>
+            <div class="item-card-body">
+              <strong
+                >{{ i.color }}{% if i.brand %} &middot; {{ i.brand }}{% endif
+                %}</strong
+              ><br />
+              <span class="item-desc">{{ i.description }}</span><br />
+              <small class="item-meta"
+                >{{ i.location }} &middot; {{ i.event_time }}</small
+              >
+            </div>
+            <a
+              class="item-card-link"
+              href="{{ url_for('matches', lost_id=i.id) }}"
+            >
+              See AI matches &rarr;
+            </a>
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% else %}
+      <p class="items-empty">No open lost reports yet.</p>
+      {% endif %}
+    </div>
+
+    <!-- Found Items -->
+    <div class="items-col">
+      <h2 class="section-heading">
+        <span class="heading-dot heading-dot--green"></span>
+        Found Items
+        <span class="items-count">({{ found_items|length }})</span>
+      </h2>
+
+      {% if found_items %}
+      <div class="item-cards-scroll">
+        <ul class="item-cards">
+          {% for i in found_items %}
+          <li class="item-card">
+            <div class="item-card-badge item-card-badge--green">
+              {{ i.category }}
+            </div>
+            <div class="item-card-body">
+              <strong
+                >{{ i.color }}{% if i.brand %} &middot; {{ i.brand }}{% endif
+                %}</strong
+              ><br />
+              <span class="item-desc">{{ i.description }}</span><br />
+              <small class="item-meta"
+                >{{ i.location }} &middot; {{ i.event_time }}</small
+              >
+            </div>
+            <p class="item-card-private">
+              <small>Private details hidden for security.</small>
+            </p>
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% else %}
+      <p class="items-empty">No found items yet.</p>
+      {% endif %}
+    </div>
+  </div>
+</section>
+<!-- END ITEMS -->
+
+<!-- ══════════════════════════════════════════════════════════
+     SECTION 3: HOW IT WORKS — Vertical Timeline
+     Simple, practical, student-friendly guide
+     ══════════════════════════════════════════════════════════ -->
+<section class="timeline-section snap-section" id="how-it-works">
+  <div class="container">
+    <h2 class="section-title">How It Works</h2>
+    <p class="section-intro">
+      Lost or found something on campus? Here's the simple step-by-step process.
+    </p>
+
+    <div class="timeline">
+      <div class="timeline-item">
+        <div class="timeline-circle">1</div>
+        <div class="timeline-content">
+          <h3>Lost something? Post it in a minute</h3>
+          <p>
+            Tell us what you lost, its color, and where you last had it (like
+            Lab 2, Room 101, or the Hallway). No account or sign-up needed—just
+            fill out the quick form and you're done.
+          </p>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-circle">2</div>
+        <div class="timeline-content">
+          <h3>Found an item? Help a classmate out</h3>
+          <p>
+            Picked up an umbrella, tumbler, calculator, or student ID? Log it
+            here, then surrender it to the campus guard or guidance office. We
+            keep private details hidden so only the real owner can claim it.
+          </p>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-circle">3</div>
+        <div class="timeline-content">
+          <h3>Automatic matching &amp; instant results</h3>
+          <p>
+            Our smart system checks your report against all found items
+            immediately. It compares item type, color, campus location, and
+            descriptions—even if written in Taglish or student shorthand.
+          </p>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-circle">4</div>
+        <div class="timeline-content">
+          <h3>Head to the office &amp; claim it</h3>
+          <p>
+            See a match that looks like yours? Go to the office. Simply describe
+            a private detail only you know (like your wallpaper, specific
+            stickers, or scratches) to verify ownership and take it home!
+          </p>
+        </div>
+      </div>
+    </div>
+    <!-- end timeline -->
+  </div>
+</section>
+<!-- END HOW IT WORKS -->
+
+<!-- ══════════════════════════════════════════════════════════
+     SECTION 4: FAQ
+     Frequently asked questions relevant to KLL campus students
+     ══════════════════════════════════════════════════════════ -->
+<section class="faq-section snap-section" id="faq">
+  <div class="container">
+    <h2 class="section-title">Frequently Asked Questions</h2>
+    <p class="section-intro">
+      Common questions about the KLL Lost and Found system.
+    </p>
+
+    <div class="faq-list">
+      <details class="faq-item">
+        <summary class="faq-question">
+          How does the AI know which found item matches my lost report?
+        </summary>
+        <div class="faq-answer">
+          <p>
+            The system uses a <strong>Hybrid AI matching engine</strong>. It
+            compares your report against all logged found items using two
+            methods at the same time: (1) rule-based attribute matching —
+            category, color, brand, location, and time window; and (2) NLP text
+            similarity using TF-IDF and Cosine Similarity. The final score is a
+            50/50 combination. The Top 3 most likely matches are shown to you
+            with an explanation of why they matched.
+          </p>
+        </div>
+      </details>
+
+      <details class="faq-item">
+        <summary class="faq-question">
+          Can I report my lost item in Tagalog or Taglish?
+        </summary>
+        <div class="faq-answer">
+          <p>
+            Yes! The system is designed to understand common Tagalog and Taglish
+            descriptions. Words like <em>payong</em>, <em>calcu</em>,
+            <em>tumbler</em>, <em>itim</em>, <em>pula</em>,
+            <em>may sticker</em>, and popular Filipino brands like
+            <em>AquaFlask</em> and <em>Bavin</em> are all recognized and matched
+            correctly. You can also write in English — both work.
+          </p>
+        </div>
+      </details>
+
+      <details class="faq-item">
+        <summary class="faq-question">
+          How do I claim a found item that matches mine?
+        </summary>
+        <div class="faq-answer">
+          <p>
+            Go to the matches page for your lost report. If a found item looks
+            like yours, bring yourself to the campus office or the guard who
+            found it. A staff member will ask you to describe a private detail
+            about the item — for example, what is on your lock screen, a
+            specific sticker, or a hidden mark. This is kept secret from the
+            public to prevent false claims. If you correctly describe it, the
+            staff member marks the claim as <strong>Verified</strong> and you
+            get your item back.
+          </p>
+        </div>
+      </details>
+
+      <details class="faq-item">
+        <summary class="faq-question">
+          What happens if nobody claims a found item after 30 days?
+        </summary>
+        <div class="faq-answer">
+          <p>
+            Found items that remain unclaimed for more than 30 days appear in
+            the staff dashboard's overdue reminders list. The staff can then
+            decide to mark the item as <strong>Unclaimed</strong>, which removes
+            it from the public listing. The item record is never deleted — it
+            remains in the system audit log for reference.
+          </p>
+        </div>
+      </details>
+
+      <details class="faq-item">
+        <summary class="faq-question">
+          Is my personal contact information visible to the public?
+        </summary>
+        <div class="faq-answer">
+          <p>
+            No. Contact details, private item descriptions (e.g., a hidden
+            identifying mark), and storage location are
+            <strong>never shown</strong> on the public pages. They are only
+            visible to authorized staff who are logged in. The public listing
+            only shows general information like category, color, and general
+            location.
+          </p>
+        </div>
+      </details>
+    </div>
+    <!-- end faq-list -->
+  </div>
+</section>
+<!-- END FAQ -->
+
 {% endblock %}

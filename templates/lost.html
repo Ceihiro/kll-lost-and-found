@@ -5,8 +5,14 @@
 <form method="post">
   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
   {% include "_fields.html" %}
-  <label>Your contact (email or phone)
-    <input name="contact" placeholder="so staff can reach you">
+  <label>Your Name
+    <input name="reporter_name" placeholder="e.g. Juan dela Cruz" required>
+  </label>
+  <label>Student ID
+    <input name="reporter_id" placeholder="e.g. 2024-00123" required>
+  </label>
+  <label>Year &amp; Section
+    <input name="reporter_section" placeholder="e.g. 3-BSIT-A" required>
   </label>
   <button type="submit">Find possible matches</button>
 </form>
