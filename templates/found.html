@@ -3,6 +3,7 @@
 {% block content %}
 <h1>Log a found item</h1>
 <form method="post">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
   {% include "_fields.html" %}
   <label>Where is it kept now?
     <input name="storage_place" placeholder="e.g. Faculty room cabinet">

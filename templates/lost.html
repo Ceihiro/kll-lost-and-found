@@ -3,6 +3,7 @@
 {% block content %}
 <h1>Report a lost item</h1>
 <form method="post">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
   {% include "_fields.html" %}
   <label>Your contact (email or phone)
     <input name="contact" placeholder="so staff can reach you">

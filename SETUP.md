@@ -45,10 +45,10 @@ Keep the project in a short folder like `C:\\dev`, **not** on the Desktop and **
 mkdir C:\\dev
 cd C:\\dev
 git clone https://github.com/Ceihiro/kll-lost-and-found.git
-cd findit-ai
+cd kll-lost-and-found
 ```
 
-You now have the project in `C:\\dev\\findit-ai`.
+You now have the project in `C:\\dev\\kll-lost-and-found`.
 
 > \*\*No Git?\*\* On the repository page click the green \*\*Code\*\* button, then \*\*Download ZIP\*\*, and unzip it into `C:\\dev`. This works for running the app, but you cannot `git pull` or `git push` updates without Git.
 
@@ -98,7 +98,7 @@ python app.py
 Every time you start working, open a new Command Prompt and run:
 
 ```
-cd C:\\dev\\findit-ai
+cd C:\\dev\\kll-lost-and-found
 venv\\Scripts\\activate
 git pull
 ```
@@ -128,7 +128,7 @@ Good habits:
 | `'python' is not recognized`, or the Microsoft Store opens | Python is not installed, or "Add python.exe to PATH" was not ticked. Run the Python installer again and choose Modify or Repair.             |
 | `'pip' is not recognized`                                  | Same cause. Use `python -m pip ...` or fix the Python install.                                                                               |
 | `No module named 'flask'`                                  | Your venv is not active or the libraries are not installed. Run `venv\\Scripts\\activate`, then `python -m pip install -r requirements.txt`. |
-| `(venv)` does not show                                     | Run `cd C:\\dev\\findit-ai`, then `venv\\Scripts\\activate`.                                                                                 |
+| `(venv)` does not show                                     | Run `cd C:\\dev\\kll-lost-and-found`, then `venv\\Scripts\\activate`.                                                                                 |
 | `can't open file ... app.py`                               | You are in the wrong folder. Run `cd C:\\dev\\findit-ai`.                                                                                    |
 | Activate is blocked in PowerShell                          | Use Command Prompt (cmd) instead.                                                                                                            |
 | `pip install` fails or is very slow                        | Check your internet, and make sure you use Python 3.13.                                                                                      |

@@ -11,10 +11,16 @@
   </head>
   <body>
     <header>
-      <a class="brand" href="{{ url_for('index') }}">KLL FindIt AI</a>
+      <a class="brand" href="{{ url_for('index') }}">KLL Lost and Found</a>
       <nav>
         <a href="{{ url_for('report_lost') }}">I lost something</a>
         <a href="{{ url_for('log_found') }}">I found something</a>
+        {% if session.get('staff') %}
+        <a href="{{ url_for('staff_dashboard') }}" class="nav-staff">Dashboard</a>
+        <a href="{{ url_for('staff_logout') }}" class="nav-staff">Logout</a>
+        {% else %}
+        <a href="{{ url_for('staff_login') }}" class="nav-staff">Staff login</a>
+        {% endif %}
       </nav>
     </header>
     <main>

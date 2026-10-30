@@ -1,6 +1,23 @@
 id,category,color,brand,description,location,event_time
-L1,Calculator,Black,Casio,black casio calculator,Lab 2,2026-10-19T14:00
-L2,Water bottle,Blue,,blue tumbler with a dent,Room 101,2026-10-19T10:30
-L3,Flash drive,Red,Kingston,red kingston usb with a keychain,Lab 1,2026-10-20T16:00
-L4,Umbrella,Black,,black folding umbrella,Hallway,2026-10-20T08:15
-L5,Charger,White,,white phone charger with long cable,Room 201,2026-10-21T13:00
+L1,Calculator,Black,Casio,calcu ko po nawala black casio fx 991 may sulat sa likod na BSCS2A pentel pen,Lab 2,2026-10-19T14:00
+L2,Water bottle,Blue,,aquaflask ko nawala blue may sticker ng anime sa gilid medyo malalim ang dent,Room 101,2026-10-19T10:30
+L3,Flash drive,Red,Kingston,sandisk flash drive red may keychain na puso nakalipad ata sa lab,Lab 1,2026-10-20T16:00
+L4,Umbrella,Black,,payong ko po nawala sa hallway black automatic fibrella folding,Hallway,2026-10-20T08:15
+L5,Charger,White,,charger ng phone ko white type c bavin brand medyo mahabang wire,Room 201,2026-10-21T13:00
+L6,ID / Card,Blue,,school id ko nawala may blue lanyard at cardholder transparent,Room 102,2026-10-22T09:00
+L7,Bag,Black,,bag ko po black jansport may red zipper sa taas nalaglag sa lab 3,Lab 3,2026-10-22T14:30
+L8,Keys,Silver,,susi ko silver may keychain na goma na pato naiwanan ata sa mesa,Faculty room,2026-10-23T11:00
+L9,Notebook / Book,Green,,green na spiral notebook ko sa math subject may pangalan sa cover,Room 201,2026-10-23T08:00
+L10,Charger,Black,,charger ng android ko type-c itim may tape sa dulo ng wire kasi sira medyo,Lab 1,2026-10-24T15:00
+L11,Water bottle,Gray,Hydro Flask,hydro flask ko gray may sticker ng kll org sa taas baka nalaglag sa room,Room 202,2026-10-24T10:00
+L12,Flash drive,Black,,flash drive ko black sandisk wala na label nahulog sa floor ng lab,Lab 2,2026-10-25T13:30
+L13,Umbrella,Blue,,payong ko asul sira na ang tip automatic may tahi sa tela,Room 101,2026-10-25T09:00
+L14,Calculator,White,Casio,scical ko white casio fx991 may cover na plastic naiwanan sa room,Room 102,2026-10-26T14:00
+L15,ID / Card,Yellow,,id ko yellow lanyard may photo ko at section na nakalagay,Hallway,2026-10-26T11:30
+L16,Bag,Gray,,sling bag ko kulay abo may earphone na pasok sa loob naiwan sa lab,Lab 1,2026-10-27T10:00
+L17,Keys,Black,,susi ng kotse black may remote nakalimutan sa mesa ng faculty,Faculty room,2026-10-27T14:00
+L18,Notebook / Book,Blue,,blue notebook ko at ballpen naiwan sa room 201 kaninang umaga,Room 201,2026-10-28T08:30
+L19,Charger,White,Apple,charger ng iphone ko white lightning cable apple nawala sa lab 3,Lab 3,2026-10-28T13:00
+L20,Water bottle,Pink,,tumbler ko pink may heart sticker kulay pula naiwanan pagkatapos ng klase,Room 102,2026-10-29T10:00
+L21,Calculator,White,Casio,white calculator casio nawala sa room 101,Room 101,2026-10-30T09:00
+L22,Calculator,White,Casio,white calculator casio nawala sa lab 2,Lab 2,2026-10-30T14:00

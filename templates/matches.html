@@ -27,9 +27,10 @@
       <ul>{% for reason in r.reasons %}<li>{{ reason }}</li>{% else %}<li>No strong reasons found.</li>{% endfor %}</ul>
     </details>
 
-    <!-- TODO (team): show this form only to logged-in staff. -->
+    {% if session.get('staff') %}
     <form method="post" action="{{ url_for('claim') }}" class="claim">
-      <p><small>Staff: ask the claimant for a detail that was not published
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <p><small>Ask the claimant for a private detail not published
       {% if r.found.private_detail %}(a private detail is on file){% endif %}, then record the result.</small></p>
       <input type="hidden" name="lost_id" value="{{ lost.id }}">
       <input type="hidden" name="found_id" value="{{ r.found.id }}">
@@ -39,6 +40,9 @@
       <input name="notes" placeholder="notes (optional)">
       <button type="submit">Save result</button>
     </form>
+    {% else %}
+    <p class="claim"><small><a href="{{ url_for('staff_login') }}">Staff login</a> to record a claim outcome.</small></p>
+    {% endif %}
   </article>
   {% endfor %}
 {% else %}

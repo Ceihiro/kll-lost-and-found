@@ -1,8 +1,28 @@
 id,category,color,brand,description,location,event_time
-F1,Calculator,Black,,black scientific calculator,Lab 2,2026-10-19T17:00
-F2,Water bottle,Blue,,dented blue water bottle,Room 101,2026-10-19T12:00
-F3,Flash drive,Red,Kingston,red usb flash drive with key ring,Lab 1,2026-10-20T17:30
-F4,Umbrella,Black,,compact black umbrella,Hallway,2026-10-20T09:00
-F5,Charger,White,,white charging cable and adapter,Room 201,2026-10-21T15:00
-F6,Notebook / Book,Green,,green notebook with a name on the cover,Room 102,2026-10-18T11:00
-F7,Umbrella,Blue,,blue umbrella with wooden handle,Room 202,2026-10-17T09:00
+F1,Calculator,Black,Casio,scientific calculator itim casio fx991 may sulat sa likod napulot sa lab 2,Lab 2,2026-10-19T17:00
+F2,Water bottle,Blue,,blue aquaflask may dent sa gilid may anime sticker nakita sa ilalim ng upuan,Room 101,2026-10-19T12:00
+F3,Flash drive,Red,Kingston,flash drive pula may keychain na puso kingston brand napulot sa lab 1,Lab 1,2026-10-20T17:30
+F4,Umbrella,Black,,black automatic na payong fibrella napulot sa hallway,Hallway,2026-10-20T09:00
+F5,Charger,White,,charger puti type c medyo mahaba ang wire bavin nakita sa upuan,Room 201,2026-10-21T15:00
+F6,ID / Card,Blue,,school id may blue lanyard transparent cardholder nalaglag sa floor,Room 102,2026-10-22T10:00
+F7,Bag,Black,,black jansport bag may red zipper nasa ilalim ng mesa,Lab 3,2026-10-22T16:00
+F8,Keys,Silver,,silver susi may rubber duck keychain napulot sa mesa,Faculty room,2026-10-23T12:00
+F9,Notebook / Book,Green,,green spiral notebook may equations at pangalan sa cover,Room 201,2026-10-23T09:30
+F10,Charger,Black,,type-c android charger itim may tape sa wire nakita sa plug area ng lab,Lab 1,2026-10-24T16:30
+F11,Water bottle,Gray,Hydro Flask,gray hydro flask may sticker ng org nakita sa ilalim ng upuan,Room 202,2026-10-24T11:00
+F12,Flash drive,Black,,black sandisk flash drive wala label napulot sa floor,Lab 2,2026-10-25T14:00
+F13,Umbrella,Blue,,asul na payong sira ang dulo awtomatik napulot sa labas ng room 101,Room 101,2026-10-25T10:00
+F14,Calculator,White,Casio,casio fx991 puti may plastic cover napulot sa mesa,Room 102,2026-10-26T15:00
+F15,ID / Card,Yellow,,yellow lanyard id may picture at section nalaglag sa hallway,Hallway,2026-10-26T12:00
+F16,Bag,Gray,,gray sling bag may earphone sa loob nakita sa sulok ng lab,Lab 1,2026-10-27T11:00
+F17,Keys,Black,,black car key may remote naiwanan sa mesa ng faculty,Faculty room,2026-10-27T15:30
+F18,Notebook / Book,Blue,,blue notebook at ballpen napulot malapit sa pinto,Room 201,2026-10-28T09:00
+F19,Charger,White,Apple,white apple lightning cable charger napulot malapit sa outlet,Lab 3,2026-10-28T14:00
+F20,Water bottle,Pink,,pink tumbler may heart sticker nakita sa silya pagkatapos ng klase,Room 102,2026-10-29T11:00
+F21,Calculator,Black,,black calculator nakita sa hallway walang brand,Hallway,2026-10-20T09:00
+F22,Bag,Blue,,blue backpack walang brand napulot sa room 101,Room 101,2026-10-22T14:00
+F23,Charger,Black,,type-a charger itim pang-wall plug brick napulot sa room 202,Room 202,2026-10-25T09:00
+F24,Umbrella,Black,,malaking black umbrella napulot sa lab 3,Lab 3,2026-10-26T08:00
+F25,Water bottle,Blue,,light blue tumbler wala dent nakita sa lab 2,Lab 2,2026-10-29T08:00
+F26,Calculator,White,Casio,white casio calculator napulot sa lab 2,Lab 2,2026-10-30T15:30
+F27,Calculator,White,Casio,white casio calculator nakita sa room 101,Room 101,2026-10-30T10:00

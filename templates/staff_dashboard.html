@@ -1,0 +1,297 @@
+{% extends "base.html" %}
+{% block title %}Staff Dashboard{% endblock %}
+{% block content %}
+
+<h1>Staff Dashboard</h1>
+<p><small>
+  <a href="{{ url_for('export_csv') }}">⬇ Download all items as CSV</a>
+  &nbsp;·&nbsp;
+  <a href="{{ url_for('index') }}">Public home</a>
+</small></p>
+
+<!-- ── Overdue reminders ───────────────────────────────────────────────── -->
+<!-- Found items open for more than 30 days — staff should follow up.     -->
+{% if overdue %}
+<section>
+  <h2>⚠ Overdue reminders (open &gt; 30 days)</h2>
+  <p><small>These found items have been sitting unclaimed for over 30 days.
+  Consider contacting the reporter or marking them unclaimed.</small></p>
+  <table>
+    <thead>
+      <tr>
+        <th>#</th><th>Category</th><th>Color</th><th>Description</th>
+        <th>Location</th><th>Found on</th><th>Storage</th><th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in overdue %}
+      <tr class="row-unclaimed">
+        <td>{{ item.id }}</td>
+        <td>{{ item.category }}</td>
+        <td>{{ item.color or '—' }}</td>
+        <td>{{ item.description }}</td>
+        <td>{{ item.location }}</td>
+        <td><small>{{ item.event_time }}</small></td>
+        <td><small>{{ item.storage_place or '—' }}</small></td>
+        <td>
+          <form method="post" action="{{ url_for('mark_unclaimed') }}" style="display:inline">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="item_id" value="{{ item.id }}">
+            <button type="submit"
+                    onclick="return confirm('Mark item #{{ item.id }} as unclaimed?')">
+              Mark unclaimed
+            </button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endif %}
+
+<!-- ── Quick stats ─────────────────────────────────────────────────────── -->
+<section>
+  <h2>Summary</h2>
+  <table>
+    <thead>
+      <tr><th></th><th>Open</th><th>Returned ✅</th><th>Unclaimed ⏳</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Lost reports</strong></td>
+        <td>{{ counts.lost.open }}</td>
+        <td>{{ counts.lost.returned }}</td>
+        <td>{{ counts.lost.unclaimed }}</td>
+      </tr>
+      <tr>
+        <td><strong>Found items</strong></td>
+        <td>{{ counts.found.open }}</td>
+        <td>{{ counts.found.returned }}</td>
+        <td>{{ counts.found.unclaimed }}</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ── Analytics Charts (Proposal Section 10 – Data Visualization) ──── -->
+<!-- Uses Chart.js loaded from CDN. Three charts:                         -->
+<!--   1. Bar chart: items by category                                    -->
+<!--   2. Bar chart: most common loss locations                           -->
+<!--   3. Doughnut chart: item status breakdown                           -->
+<section>
+  <h2>Analytics</h2>
+  <div class="charts-grid">
+
+    <div class="chart-box">
+      <h3>Items by Category</h3>
+      <canvas id="categoryChart" height="220"></canvas>
+    </div>
+
+    <div class="chart-box">
+      <h3>Top Loss Locations</h3>
+      <canvas id="locationChart" height="220"></canvas>
+    </div>
+
+    <div class="chart-box">
+      <h3>Status Breakdown</h3>
+      <canvas id="statusChart" height="220"></canvas>
+    </div>
+
+  </div>
+</section>
+
+<!-- ── Feedback Weight Refinement (Proposal Section 6.8) ─────────────── -->
+<!-- After enough Verified claims accumulate, the system learns which     -->
+<!-- attributes are the strongest predictors and suggests updated weights. -->
+<section>
+  <h2>🧠 AI Feedback Weight Refinement</h2>
+  <p><small>Based on verified claim history, the system can suggest adjusted
+  attribute weights that improve future matching accuracy (Proposal Section 6.8).</small></p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Attribute</th>
+        <th>Current Weight</th>
+        <th>Suggested (from feedback)</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% set attrs = ["category", "color", "brand", "location", "time"] %}
+      {% for attr in attrs %}
+      <tr>
+        <td><strong>{{ attr | capitalize }}</strong></td>
+        <td>{{ "%.1f%%"|format(current_weights[attr] * 100) }}</td>
+        <td>
+          {% if feedback_weights %}
+            {{ "%.1f%%"|format(feedback_weights[attr] * 100) }}
+            {% if feedback_weights[attr] > current_weights[attr] %}
+              <span style="color:green">▲</span>
+            {% elif feedback_weights[attr] < current_weights[attr] %}
+              <span style="color:red">▼</span>
+            {% else %}
+              <span style="color:gray">–</span>
+            {% endif %}
+          {% else %}
+            <em style="color:var(--muted)">Need ≥ 3 verified claims</em>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  {% if feedback_weights %}
+  <form method="post" action="{{ url_for('apply_weights') }}" style="margin-top:.8rem">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <button type="submit"
+            onclick="return confirm('Apply learned weights to the matching engine?')">
+      Apply suggested weights
+    </button>
+    &nbsp;<small>(Resets by deleting <code>learned_weights.json</code> from the project folder)</small>
+  </form>
+  {% endif %}
+</section>
+
+<!-- ── All items ───────────────────────────────────────────────────────── -->
+<section>
+  <h2>All items ({{ items | length }})</h2>
+  {% if items %}
+  <table>
+    <thead>
+      <tr>
+        <th>#</th><th>Kind</th><th>Status</th><th>Category</th><th>Color</th>
+        <th>Brand</th><th>Description</th><th>Location</th><th>Event time</th>
+        <th>Contact / Storage</th><th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in items %}
+      <tr class="row-{{ item.status }}">
+        <td>{{ item.id }}</td>
+        <td>{{ item.kind }}</td>
+        <td><span class="badge badge-{{ item.status }}">{{ item.status }}</span></td>
+        <td>{{ item.category }}</td>
+        <td>{{ item.color or '—' }}</td>
+        <td>{{ item.brand or '—' }}</td>
+        <td>{{ item.description }}</td>
+        <td>{{ item.location }}</td>
+        <td><small>{{ item.event_time }}</small></td>
+        <td>
+          <small>
+            {% if item.kind == 'lost' %}
+              {{ item.contact or '—' }}
+            {% else %}
+              📦 {{ item.storage_place or '—' }}<br>
+              🔑 {{ item.private_detail or '—' }}
+            {% endif %}
+          </small>
+        </td>
+        <td>
+          {% if item.kind == 'found' and item.status == 'open' %}
+          <form method="post" action="{{ url_for('mark_unclaimed') }}" style="display:inline">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="item_id" value="{{ item.id }}">
+            <button type="submit"
+                    onclick="return confirm('Mark item #{{ item.id }} as unclaimed?')">
+              Mark unclaimed
+            </button>
+          </form>
+          {% endif %}
+          {% if item.kind == 'lost' and item.status == 'open' %}
+          <a href="{{ url_for('matches', lost_id=item.id) }}">See matches</a>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p>No items in the database yet. Run <code>python seed_data.py</code> to add sample data.</p>
+  {% endif %}
+</section>
+
+<!-- ── Claim history ───────────────────────────────────────────────────── -->
+<section>
+  <h2>Recent verifications (last 30)</h2>
+  {% if claims %}
+  <table>
+    <thead>
+      <tr><th>Date</th><th>Outcome</th><th>Lost item</th><th>Found item</th><th>Notes</th></tr>
+    </thead>
+    <tbody>
+      {% for c in claims %}
+      <tr>
+        <td><small>{{ c.created_at }}</small></td>
+        <td><span class="badge badge-{{ c.outcome | lower | replace(' ', '-') }}">
+            {{ c.outcome }}</span></td>
+        <td><small>#{{ c.lost_id }} · {{ c.lost_category }} {{ c.lost_color }}<br>{{ c.lost_desc }}</small></td>
+        <td><small>#{{ c.found_id }} · {{ c.found_category }} {{ c.found_color }}<br>{{ c.found_desc }}</small></td>
+        <td><small>{{ c.notes or '—' }}</small></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p>No verifications recorded yet.</p>
+  {% endif %}
+</section>
+
+<!-- ── Chart.js (loaded here, only for this page) ─────────────────────── -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+// chart_data is passed from the Flask route as a JSON string.
+const chartData = {{ chart_data | safe }};
+
+// Helper: extract labels and values from a list of [name, count] pairs.
+const labels = (arr) => arr.map(x => x[0]);
+const values = (arr) => arr.map(x => x[1]);
+
+// 1. Items by Category (horizontal bar chart)
+new Chart(document.getElementById("categoryChart"), {
+  type: "bar",
+  data: {
+    labels: labels(chartData.categories),
+    datasets: [{
+      label: "Items",
+      data: values(chartData.categories),
+      backgroundColor: "#2b5fd9",
+      borderRadius: 4,
+    }]
+  },
+  options: { indexAxis: "y", plugins: { legend: { display: false } } }
+});
+
+// 2. Top loss locations (bar chart)
+new Chart(document.getElementById("locationChart"), {
+  type: "bar",
+  data: {
+    labels: labels(chartData.locations),
+    datasets: [{
+      label: "Lost reports",
+      data: values(chartData.locations),
+      backgroundColor: "#16a34a",
+      borderRadius: 4,
+    }]
+  },
+  options: { plugins: { legend: { display: false } } }
+});
+
+// 3. Status breakdown (doughnut chart)
+const statusLabels = Object.keys(chartData.statuses);
+const statusValues = Object.values(chartData.statuses);
+new Chart(document.getElementById("statusChart"), {
+  type: "doughnut",
+  data: {
+    labels: statusLabels,
+    datasets: [{
+      data: statusValues,
+      backgroundColor: ["#2b5fd9", "#16a34a", "#d97706"],
+    }]
+  },
+  options: { plugins: { legend: { position: "bottom" } } }
+});
+</script>
+
+{% endblock %}
