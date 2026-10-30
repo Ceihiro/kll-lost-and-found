@@ -1,6 +1,6 @@
-# KLL FindIt AI
+# KLL Lost and Found
 
-lost-and-found matching system for classrooms and labs at Kolehiyo ng Lungsod ng Lipa (KLL). Made for **CSE 103 Intelligent System**.
+lost-and-found matching system for Kolehiyo ng Lungsod ng Lipa (KLL). Made for **CSE 103 Intelligent System**.
 
 Someone reports a lost item, staff log a found item, and the system suggests the most likely matches with a score and the reasons. Staff always verify the owner before an item is released.
 
@@ -19,7 +19,7 @@ Open Command Prompt and run these one at a time:
 ```
 mkdir C:\dev
 cd C:\dev
-git clone https://github.com/Ceihiro/findit-ai.git
+git clone https://github.com/Ceihiro/kll-lost-and-found.git
 cd findit-ai
 python -m venv venv
 venv\Scripts\activate
