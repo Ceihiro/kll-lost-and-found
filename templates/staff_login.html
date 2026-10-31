@@ -5,10 +5,10 @@
 <form method="post">
   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
   <label>Username
-    <input name="username" required autocomplete="username">
+    <input name="username" required maxlength="50" autocomplete="username">
   </label>
   <label>Password
-    <input type="password" name="password" required autocomplete="current-password">
+    <input type="password" name="password" required maxlength="100" autocomplete="current-password">
   </label>
   <button type="submit">Log in</button>
 </form>

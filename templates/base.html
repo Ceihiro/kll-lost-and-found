@@ -5,7 +5,7 @@
   CSE 103 – Intelligent System | Kolehiyo ng Lungsod ng Lipa
 -->
 <!doctype html>
-<html lang="en">
+<html lang="en" class="{% if request.endpoint == 'index' %}snap-page{% endif %}">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -29,14 +29,22 @@
       <!-- ── Top Maroon Bar ───────────────────────────────────── -->
       <div class="header-top-bar">
         <div class="header-top-inner container">
-          <!-- Left: Institutional Branding -->
+          <!-- Left: Institutional Branding with Mobile Logo -->
           <a class="header-brand" href="{{ url_for('index') }}">
-            <span class="brand-institution">KOLEHIYO NG LUNGSOD NG LIPA</span>
-            <span class="brand-portal">Smart Find AI</span>
+            <img
+              src="{{ url_for('static', filename='images/KLL-logo.webp') }}"
+              alt="KLL Logo"
+              class="mobile-brand-logo mobile-only"
+              onerror="this.style.display = 'none'"
+            />
+            <div class="brand-text-wrap">
+              <span class="brand-institution">KOLEHIYO NG LUNGSOD NG LIPA</span>
+              <span class="brand-portal">Smart Find AI</span>
+            </div>
           </a>
 
-          <!-- Center: Curved White Notch Container -->
-          <div class="header-notch-container">
+          <!-- Center: Curved White Notch Container (Desktop Only) -->
+          <div class="header-notch-container desktop-only">
             <div class="header-notch-arch">
               <a
                 href="{{ url_for('index') }}"
@@ -53,8 +61,8 @@
             </div>
           </div>
 
-          <!-- Right: Staff Login Button -->
-          <div class="header-top-actions">
+          <!-- Right: Staff Login Button (Desktop Only) -->
+          <div class="header-top-actions desktop-only">
             {% if session.get('staff') %}
             <a
               href="{{ url_for('staff_dashboard') }}"
@@ -74,30 +82,47 @@
             >
             {% endif %}
           </div>
+
+          <!-- Right: Mobile Menu Toggle Button (Mobile Only) -->
+          <button
+            type="button"
+            class="mobile-menu-toggle mobile-only"
+            id="mobileMenuBtn"
+            aria-label="Toggle navigation menu"
+            aria-expanded="false"
+            aria-controls="mobileNavMenu"
+          >
+            <span class="hamburger-bar"></span>
+            <span class="hamburger-bar"></span>
+            <span class="hamburger-bar"></span>
+          </button>
         </div>
       </div>
 
-      <!-- ── Bottom Single-Row Navigation Bar (Distributed Left-to-Right) ── -->
-      <div class="header-nav-bar">
+      <!-- ── Navigation Bar (Desktop Single-Row / Mobile Slide Drawer) ── -->
+      <div class="header-nav-bar" id="mobileNavMenu">
         <div class="header-nav-inner container">
           <nav class="main-navigation">
             <a
               href="{{ url_for('report_lost') }}"
-              class="nav-link {% if request.endpoint == 'report_lost' %}nav-link--active{% endif %}"
+              class="nav-link nav-link--cta-lost {% if request.endpoint == 'report_lost' %}nav-link--active{% endif %}"
               >Report Lost Item</a
             >
             <a
               href="{{ url_for('log_found') }}"
-              class="nav-link {% if request.endpoint == 'log_found' %}nav-link--active{% endif %}"
+              class="nav-link nav-link--cta-found {% if request.endpoint == 'log_found' %}nav-link--active{% endif %}"
               >Log Found Item</a
             >
-            <!-- Clearance gap prevents nav text from ever touching/overlapping center logo -->
-            <div class="nav-logo-clearance" aria-hidden="true"></div>
+            <!-- Clearance gap prevents nav text from touching center logo on desktop -->
+            <div
+              class="nav-logo-clearance desktop-only"
+              aria-hidden="true"
+            ></div>
             <a
-              href="{{ url_for('index') }}"
-              class="nav-link {% if request.endpoint == 'index' %}nav-link--active{% endif %}"
-              id="nav-home"
-              >Home</a
+              href="{{ url_for('index') }}#items"
+              class="nav-link"
+              id="nav-items"
+              >Browse Items</a
             >
             <a
               href="{{ url_for('index') }}#how-it-works"
@@ -108,6 +133,28 @@
             <a href="{{ url_for('index') }}#faq" class="nav-link" id="nav-faq"
               >FAQ</a
             >
+
+            <!-- Mobile Only: Staff Actions inside the drawer -->
+            <div class="mobile-nav-staff mobile-only">
+              {% if session.get('staff') %}
+              <a
+                href="{{ url_for('staff_dashboard') }}"
+                class="mobile-staff-btn mobile-staff-btn--primary"
+                >Staff Dashboard</a
+              >
+              <a
+                href="{{ url_for('staff_logout') }}"
+                class="mobile-staff-btn mobile-staff-btn--outline"
+                >Logout</a
+              >
+              {% else %}
+              <a
+                href="{{ url_for('staff_login') }}"
+                class="mobile-staff-btn mobile-staff-btn--primary"
+                >Staff Portal Login</a
+              >
+              {% endif %}
+            </div>
           </nav>
         </div>
       </div>
@@ -153,7 +200,7 @@
           <h4>KLL Smart Find AI</h4>
           <p>
             An NLP-based lost and found system with intelligent ranking for the
-            Kolehiyo ng Lungsod ng Lipa campus community.
+            Kolehiyo ng Lungsod ng Lipa campus.
           </p>
         </div>
 
@@ -164,6 +211,9 @@
               <a href="{{ url_for('report_lost') }}">Report a Lost Item</a>
             </li>
             <li><a href="{{ url_for('log_found') }}">Log a Found Item</a></li>
+            <li>
+              <a href="{{ url_for('index') }}#items">Browse Items</a>
+            </li>
             <li>
               <a href="{{ url_for('index') }}#how-it-works">How It Works</a>
             </li>
@@ -179,16 +229,15 @@
           <h4>Campus Address</h4>
           <p>
             Kolehiyo ng Lungsod ng Lipa<br />
-            J.P. Laurel Highway, Marawoy<br />
+            Barangay Marawoy-Dagatan<br />
             Lipa City, Batangas 4217
           </p>
         </div>
 
         <div class="footer-col">
           <h4>Contact &amp; Support</h4>
-          <p>Registrar: (043) 756-5436</p>
-          <p>Security &amp; Guard Office: Local 104</p>
-          <p>Email: lostandfound@kll.edu.ph</p>
+          <p>Contact Number: (043) 774 2420</p>
+          <p>Email: kll_lipa@yahoo.com</p>
         </div>
       </div>
 
@@ -217,30 +266,52 @@
         });
 
         const isHomePage = document.body.classList.contains("page-home");
-        const navHome = document.getElementById("nav-home");
+        const navItems = document.getElementById("nav-items");
         const navHow = document.getElementById("nav-how-it-works");
         const navFaq = document.getElementById("nav-faq");
         const header = document.querySelector(".site-header");
 
-        if (!isHomePage || !navHome || !navHow || !navFaq) return;
+        if (!isHomePage || !navItems || !navHow || !navFaq) return;
 
         const getHeaderHeight = () => (header ? header.offsetHeight : 134);
 
         const sections = [
-          { id: "hero", nav: navHome },
-          { id: "items", nav: navHome },
+          { id: "hero", nav: null },
+          { id: "items", nav: navItems },
           { id: "how-it-works", nav: navHow },
           { id: "faq", nav: navFaq },
         ];
 
         function setActiveNav(targetLink) {
-          [navHome, navHow, navFaq].forEach((link) => {
+          [navItems, navHow, navFaq].forEach((link) => {
             if (link) link.classList.remove("nav-link--active");
           });
           if (targetLink) targetLink.classList.add("nav-link--active");
         }
 
-        // Smooth click scroll without peeking for nav links and in-page anchor cards
+        // Fluid glide scroll function
+        function smoothGlideTo(targetEl, targetId) {
+          if (!targetEl) return;
+          const root = document.documentElement;
+
+          // Temporarily disable mandatory snap so the browser glides with a smooth easing animation
+          root.style.scrollSnapType = "none";
+          targetEl.scrollIntoView({ behavior: "smooth", block: "start" });
+
+          if (targetId === "how-it-works") setActiveNav(navHow);
+          else if (targetId === "faq") setActiveNav(navFaq);
+          else if (targetId === "items") setActiveNav(navItems);
+          else if (targetId === "hero") setActiveNav(null);
+
+          history.replaceState(null, "", "#" + targetId);
+
+          // Re-enable mandatory snap once the glide finishes
+          setTimeout(() => {
+            root.style.scrollSnapType = "";
+          }, 650);
+        }
+
+        // Smooth click scroll for nav links and in-page anchor cards
         document.querySelectorAll('a[href*="#"]').forEach((link) => {
           link.addEventListener("click", (e) => {
             const href = link.getAttribute("href");
@@ -252,32 +323,15 @@
 
             if (targetEl) {
               e.preventDefault();
-              isAutoLocking = true;
-              clearTimeout(scrollEndTimer);
-
-              if (targetId === "how-it-works") setActiveNav(navHow);
-              else if (targetId === "faq") setActiveNav(navFaq);
-              else if (targetId === "hero" || targetId === "items")
-                setActiveNav(navHome);
-
-              const headerH = getHeaderHeight();
-              const targetTop = targetEl.offsetTop - headerH;
-              window.scrollTo({
-                top: Math.max(0, targetTop),
-                behavior: "smooth",
-              });
-              history.replaceState(null, "", "#" + targetId);
-              setTimeout(() => {
-                isAutoLocking = false;
-              }, 600);
+              smoothGlideTo(targetEl, targetId);
             }
           });
         });
 
         // Track active section and transfer active line on scroll smoothly
         function updateActiveNavOnScroll() {
-          const scrollPos = window.scrollY + getHeaderHeight() + 120;
-          let currentNav = navHome;
+          const scrollPos = (window.scrollY || document.documentElement.scrollTop || 0) + getHeaderHeight() + 120;
+          let currentNav = null;
 
           sections.forEach(({ id, nav }) => {
             const el = document.getElementById(id);
@@ -289,78 +343,67 @@
           setActiveNav(currentNav);
         }
 
-        // ── Fluid Auto-Lock to Nearest Section on Idle ──
-        let scrollEndTimer = null;
-        let isAutoLocking = false;
-
-        window.addEventListener(
-          "scroll",
-          () => {
-            updateActiveNavOnScroll();
-
-            if (isAutoLocking) return;
-
-            clearTimeout(scrollEndTimer);
-            // 240ms idle delay lets scrolling flow freely with natural momentum without feeling tight
-            scrollEndTimer = setTimeout(() => {
-              smoothLockNearestSection();
-            }, 240);
-          },
-          { passive: true },
-        );
-
-        function smoothLockNearestSection() {
-          // If the user scrolled to the bottom to view the footer, let it rest naturally
-          const maxScroll =
-            document.documentElement.scrollHeight - window.innerHeight;
-          if (window.scrollY >= maxScroll - 60) return;
-
-          const headerH = getHeaderHeight();
-          const snapElements = Array.from(
-            document.querySelectorAll(".snap-section"),
-          );
-          const currentViewportTop = window.scrollY + headerH;
-          let closest = snapElements[0];
-          let minDistance = Infinity;
-
-          snapElements.forEach((el) => {
-            const dist = Math.abs(currentViewportTop - el.offsetTop);
-            if (dist < minDistance) {
-              minDistance = dist;
-              closest = el;
-            }
-          });
-
-          // Auto-adjust smoothly if off by more than 20px
-          if (closest && minDistance > 20) {
-            isAutoLocking = true;
-            const targetY = closest.offsetTop - headerH;
-            window.scrollTo({
-              top: Math.max(0, targetY),
-              behavior: "smooth",
-            });
-            setTimeout(() => {
-              isAutoLocking = false;
-            }, 500);
-          }
-        }
+        window.addEventListener("scroll", updateActiveNavOnScroll, { passive: true });
 
         // Handle direct hash navigation on page load
         if (window.location.hash) {
           const targetEl = document.querySelector(window.location.hash);
           if (targetEl) {
             setTimeout(() => {
-              const headerH = getHeaderHeight();
-              window.scrollTo({
-                top: Math.max(0, targetEl.offsetTop - headerH),
-                behavior: "smooth",
-              });
-              if (window.location.hash === "#how-it-works")
-                setActiveNav(navHow);
-              else if (window.location.hash === "#faq") setActiveNav(navFaq);
+              const targetId = window.location.hash.substring(1);
+              smoothGlideTo(targetEl, targetId);
             }, 120);
           }
         }
+      });
+
+      // ── Mobile Menu Toggle Logic ─────────────────────────────────
+      document.addEventListener("DOMContentLoaded", () => {
+        const menuBtn = document.getElementById("mobileMenuBtn");
+        const navMenu = document.getElementById("mobileNavMenu");
+        if (!menuBtn || !navMenu) return;
+
+        function toggleMenu(open) {
+          const isOpen =
+            open !== undefined ? open : !navMenu.classList.contains("is-open");
+          menuBtn.classList.toggle("is-open", isOpen);
+          navMenu.classList.toggle("is-open", isOpen);
+          menuBtn.setAttribute("aria-expanded", isOpen ? "true" : "false");
+          document.body.classList.toggle("mobile-menu-active", isOpen);
+        }
+
+        menuBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          toggleMenu();
+        });
+
+        // Close menu when clicking on any nav link
+        navMenu.querySelectorAll("a").forEach((link) => {
+          link.addEventListener("click", () => {
+            if (window.innerWidth <= 768) {
+              toggleMenu(false);
+            }
+          });
+        });
+
+        // Close on clicking outside
+        document.addEventListener("click", (e) => {
+          if (
+            window.innerWidth <= 768 &&
+            navMenu.classList.contains("is-open")
+          ) {
+            if (!menuBtn.contains(e.target) && !navMenu.contains(e.target)) {
+              toggleMenu(false);
+            }
+          }
+        });
+
+        // Close on Escape key
+        document.addEventListener("keydown", (e) => {
+          if (e.key === "Escape" && navMenu.classList.contains("is-open")) {
+            toggleMenu(false);
+          }
+        });
       });
     </script>
   </body>

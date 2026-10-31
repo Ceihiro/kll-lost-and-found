@@ -26,7 +26,8 @@ import csv
 import io
 import json
 import os
-from datetime import datetime
+import re
+from datetime import datetime, timedelta
 from functools import wraps
 from pathlib import Path
 
@@ -82,42 +83,81 @@ def _form_item(kind):
     f = request.form
     category = f.get("category", "").strip()
     if category == "Other":
-        cat_other = f.get("category_other", "").strip()
+        cat_other = f.get("category_other", "").strip()[:60]
         if cat_other:
             category = f"Other ({cat_other})"
 
     color = f.get("color", "").strip()
     if color == "Other":
-        col_other = f.get("color_other", "").strip()
+        col_other = f.get("color_other", "").strip()[:60]
         if col_other:
             color = f"Other ({col_other})"
 
     location = f.get("location", "").strip()
     if location == "Other":
-        loc_other = f.get("location_other", "").strip()
+        loc_other = f.get("location_other", "").strip()[:60]
         if loc_other:
             location = f"Other ({loc_other})"
+
+    # Handle both combined event_time and split event_date + event_time_clock
+    event_time = f.get("event_time", "").strip()
+    if not event_time:
+        ed = f.get("event_date", "").strip()
+        et = f.get("event_time_clock", "").strip()
+        if ed and et:
+            event_time = f"{ed}T{et}"
+        elif ed:
+            event_time = f"{ed}T12:00"
 
     return dict(
         kind=kind,
         category=category,
         color=color,
-        brand=   f.get("brand",       "").strip(),
+        brand=f.get("brand", "").strip()[:50],
         description=f.get("description", "").strip()[:500],
         location=location,
-        event_time=f.get("event_time","").strip(),
+        event_time=event_time,
     )
 
 
+def _get_date_bounds():
+    """Return common date/time values and 5-year bounds for form templates."""
+    now_dt = datetime.now()
+    now_date = now_dt.strftime("%Y-%m-%d")
+    now_time = now_dt.strftime("%H:%M")
+    now = now_dt.strftime("%Y-%m-%dT%H:%M")
+    try:
+        min_dt = now_dt.replace(year=now_dt.year - 5)
+    except ValueError:
+        min_dt = now_dt.replace(year=now_dt.year - 5, day=28)
+    min_date = min_dt.strftime("%Y-%m-%d")
+    return dict(now=now, now_date=now_date, now_time=now_time, min_date=min_date)
+
+
 def _validate_time(event_time):
-    """Return True if event_time is a valid ISO datetime string (e.g. 2026-10-30T14:30),
-    or False if it is blank or in a wrong format.
+    """Validate that event_time is a valid ISO datetime string,
+    is not set in the future (with 5 minutes leeway for clock differences),
+    and is not older than 5 years in the past.
+    Returns (is_valid, error_message).
     """
     try:
-        datetime.fromisoformat(event_time)
-        return True
+        dt = datetime.fromisoformat(event_time)
     except (TypeError, ValueError):
-        return False
+        return False, "Invalid date/time — please use the date picker."
+
+    now = datetime.now()
+    if dt > now + timedelta(minutes=5):
+        return False, "The date and time cannot be in the future."
+
+    try:
+        five_years_ago = now.replace(year=now.year - 5)
+    except ValueError:
+        five_years_ago = now.replace(year=now.year - 5, day=28)
+
+    if dt < five_years_ago:
+        return False, "The date cannot be older than 5 years in the past."
+
+    return True, ""
 
 
 # ── Public routes ──────────────────────────────────────────────────────────
@@ -137,26 +177,56 @@ def report_lost():
     """GET  → show the 'Report a lost item' form.
     POST → validate the form, save the lost item, redirect to the matches page.
     """
-    now = datetime.now().strftime("%Y-%m-%dT%H:%M")   # pre-fill the date/time field
+    bounds = _get_date_bounds()
 
     if request.method == "POST":
         data = _form_item("lost")
 
-        # Read student identity fields
-        reporter_name    = request.form.get("reporter_name", "").strip()
-        reporter_id      = request.form.get("reporter_id", "").strip()
-        reporter_section = request.form.get("reporter_section", "").strip()
+        # Read student / reporter identity fields (defensive length bounds)
+        who = request.form.get("reporter_role", "Student").strip()
+        if who not in ("Student", "Faculty", "Campus Guard"):
+            who = "Student"
+        first_name = request.form.get("first_name", "").strip()[:50]
+        last_name  = request.form.get("last_name", "").strip()[:50]
+        reporter_name = request.form.get("reporter_name", "").strip()[:100]
 
-        if reporter_name:
-            contact = f"{reporter_name} | ID: {reporter_id} | {reporter_section}"
+        if first_name or last_name:
+            full_name = f"{first_name} {last_name}".strip()
         else:
-            contact = request.form.get("contact", "").strip()
+            full_name = reporter_name
 
-        # Basic validation before saving to the database.
+        reporter_id      = request.form.get("reporter_id", "").strip()[:15]
+        reporter_section = request.form.get("reporter_section", "").strip()[:20]
+
+        if full_name:
+            parts = [full_name]
+            if who:
+                parts.append(f"({who})")
+            if reporter_id:
+                parts.append(f"ID: {reporter_id}")
+            if reporter_section:
+                parts.append(reporter_section)
+            contact = " | ".join(parts)
+        else:
+            contact = request.form.get("contact", "").strip()[:150]
+
+        # Validation rules:
+        is_valid_time, time_err = _validate_time(data["event_time"])
+        name_pattern = re.compile(r"^[A-Za-z\s\.\-']+$")
+        id_pattern = re.compile(r"^[0-9\-]+$")
+
         if not data["description"] or not data["event_time"]:
             flash("Please fill in the description and the date/time.")
-        elif not _validate_time(data["event_time"]):
-            flash("Invalid date/time — please use the date picker.")
+        elif len(data["description"]) < 10:
+            flash("Please provide a more descriptive summary (at least 10 characters).")
+        elif not is_valid_time:
+            flash(time_err)
+        elif first_name and not name_pattern.match(first_name):
+            flash("First name should contain letters only.")
+        elif last_name and not name_pattern.match(last_name):
+            flash("Last name should contain letters only.")
+        elif reporter_id and not id_pattern.match(reporter_id):
+            flash("Student ID must contain numbers and hyphens only (e.g. 2024-00123).")
         else:
             lost_id = db.add_item(
                 **data,
@@ -165,7 +235,7 @@ def report_lost():
             # After saving, immediately show the matching results.
             return redirect(url_for("matches", lost_id=lost_id))
 
-    return render_template("lost.html", cfg=config, now=now)
+    return render_template("lost.html", cfg=config, **bounds)
 
 
 @app.route("/found", methods=["GET", "POST"])
@@ -173,25 +243,49 @@ def log_found():
     """GET  → show the 'Log a found item' form.
     POST → validate, save the found item, redirect home.
     """
-    now = datetime.now().strftime("%Y-%m-%dT%H:%M")
+    bounds = _get_date_bounds()
 
     if request.method == "POST":
         data = _form_item("found")
 
+        who = request.form.get("reporter_role", "Student").strip()
+        if who not in ("Student", "Faculty", "Campus Guard"):
+            who = "Student"
+        first_name = request.form.get("first_name", "").strip()[:50]
+        last_name  = request.form.get("last_name", "").strip()[:50]
+        storage_place = request.form.get("storage_place", "").strip()[:100]
+        private_detail = request.form.get("private_detail", "").strip()[:200]
+
+        full_name = f"{first_name} {last_name}".strip()
+        if full_name:
+            contact = f"{full_name} ({who})" if who else full_name
+        else:
+            contact = request.form.get("contact", "").strip()[:150]
+
+        is_valid_time, time_err = _validate_time(data["event_time"])
+        name_pattern = re.compile(r"^[A-Za-z\s\.\-']+$")
+
         if not data["description"] or not data["event_time"]:
             flash("Please fill in the description and the date/time.")
-        elif not _validate_time(data["event_time"]):
-            flash("Invalid date/time — please use the date picker.")
+        elif len(data["description"]) < 10:
+            flash("Please provide a more descriptive summary (at least 10 characters).")
+        elif not is_valid_time:
+            flash(time_err)
+        elif first_name and not name_pattern.match(first_name):
+            flash("First name should contain letters only.")
+        elif last_name and not name_pattern.match(last_name):
+            flash("Last name should contain letters only.")
         else:
             db.add_item(
                 **data,
-                storage_place= request.form.get("storage_place",  "").strip(),
-                private_detail=request.form.get("private_detail", "").strip(),
+                contact=contact,
+                storage_place=storage_place,
+                private_detail=private_detail,
             )
-            flash("Found item saved.")
+            flash("Found item saved successfully.")
             return redirect(url_for("index"))
 
-    return render_template("found.html", cfg=config, now=now)
+    return render_template("found.html", cfg=config, **bounds)
 
 
 @app.route("/matches/<int:lost_id>")
@@ -229,7 +323,7 @@ def staff_login():
 
         # Read the expected credentials from the environment (.env file).
         valid_user = os.environ.get("STAFF_USERNAME", "staff")
-        valid_pass = os.environ.get("STAFF_PASSWORD", "")
+        valid_pass = os.environ.get("STAFF_PASSWORD", "kll2026")
 
         if username == valid_user and password == valid_pass:
             session["staff"] = True          # mark this browser session as staff
@@ -321,10 +415,11 @@ def staff_edit(item_id):
         storage_place = f.get("storage_place", "").strip()
         private_detail = f.get("private_detail", "").strip()
 
+        is_valid_time, time_err = _validate_time(event_time)
         if not description or not event_time:
             flash("Description and Date & Time cannot be empty.")
-        elif not _validate_time(event_time):
-            flash("Invalid date/time format.")
+        elif not is_valid_time:
+            flash(time_err)
         else:
             db.update_item(
                 item_id=item_id,
@@ -342,7 +437,8 @@ def staff_edit(item_id):
             flash(f"Item #{item_id} updated successfully.")
             return redirect(url_for("staff_dashboard"))
 
-    return render_template("staff_edit.html", item=item, cfg=config)
+    bounds = _get_date_bounds()
+    return render_template("staff_edit.html", item=item, cfg=config, **bounds)
 
 
 @app.route("/staff/delete/<int:item_id>", methods=["POST"])
@@ -355,6 +451,17 @@ def staff_delete(item_id):
     else:
         db.delete_item(item_id)
         flash(f"Item #{item_id} permanently deleted.")
+    return redirect(url_for("staff_dashboard"))
+
+
+@app.route("/staff/revert_claim/<int:claim_id>", methods=["POST"])
+@staff_required
+def revert_claim(claim_id):
+    """Staff only: revert an accidental claim outcome and restore items to open."""
+    if db.revert_claim(claim_id):
+        flash(f"Claim audit #{claim_id} reverted successfully. Linked items are now Open again.")
+    else:
+        flash("Claim record not found.")
     return redirect(url_for("staff_dashboard"))
 
 

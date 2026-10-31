@@ -1,159 +1,163 @@
-# Setup guide
+# KLL Lost and Found — Setup Guide
 
-Full step-by-step instructions for Windows.
+Full step-by-step instructions for Windows. Follow these steps in order to get the project running on your laptop.
 
-\---
+---
 
-## Get the project on your laptop
+## 1. Get the Project on Your Laptop
 
-Do these steps in order. Use **Command Prompt** (press the Windows key, type `cmd`, press Enter).
+Use **Command Prompt** (press the Windows key, type `cmd`, and press Enter).
 
-### Step 1: Install the tools
+### Step 1: Install the Required Tools
 
-You need Python 3.13, Git, and (recommended) VS Code.
+You need **Python 3.10+ (Python 3.13 recommended)**, **Git**, and (recommended) **VS Code**.
 
-1. **Python 3.13:** go to https://www.python.org/downloads/windows/ and under **Stable Releases** choose **Python 3.13.x** and click **Windows installer (64-bit)**.
-   - On the first screen of the installer, **tick "Add python.exe to PATH"** at the bottom. This is the most common mistake.
-   - Then click **Install Now**.
-   - Use 3.13, not the newest version. Brand-new Python versions can be missing library support.
+1. **Python:** Go to https://www.python.org/downloads/windows/ and download the 64-bit installer for Python 3.13.x.
+   - **CRITICAL:** On the very first screen of the installer, **tick "Add python.exe to PATH"** at the bottom before clicking Install Now. This prevents `'python' is not recognized` errors.
+2. **Git:** Download and install from https://git-scm.com/downloads with default settings.
+3. **VS Code (Optional but recommended):** Download from https://code.visualstudio.com/.
 
-2. **Git:** https://git-scm.com/downloads. Install with the default options.
-3. **VS Code (editor):** https://code.visualstudio.com/. After installing, open it, go to Extensions, and install the **Python** extension.
+Close Command Prompt, open a new one, and verify the tools:
 
-Close Command Prompt, open a new one, and check:
-
-```
+```cmd
 python --version
 pip --version
 git --version
 ```
 
-Each command should print a version number (Python should say 3.13.x). If it says `'python' is not recognized`, or opens the Microsoft Store, Python is not installed correctly. Run the Python installer again, choose **Modify** or **Repair**, and tick "Add python.exe to PATH".
+Configure Git with your name and email (one time only):
 
-Tell Git who you are (one time only):
-
-```
+```cmd
 git config --global user.name "Your Name"
 git config --global user.email "you@example.com"
 ```
 
-### Step 2: Clone the repository
+---
 
-Keep the project in a short folder like `C:\\dev`, **not** on the Desktop and **not** inside OneDrive. OneDrive can lock the many small files inside the virtual environment and cause strange errors.
+### Step 2: Clone the Repository
 
-```
-mkdir C:\\dev
-cd C:\\dev
+Keep the project in a short, local path like `C:\dev` (**do NOT put it inside OneDrive or Desktop**, as OneDrive locks database and virtual environment files).
+
+```cmd
+mkdir C:\dev
+cd C:\dev
 git clone https://github.com/Ceihiro/kll-lost-and-found.git
 cd kll-lost-and-found
 ```
 
-You now have the project in `C:\\dev\\kll-lost-and-found`.
+> **No Git?** You can click the green **Code** button on GitHub, select **Download ZIP**, and extract it into `C:\dev\kll-lost-and-found`. (Note: using `git clone` is better so you can `git pull` updates from teammates).
 
-> \*\*No Git?\*\* On the repository page click the green \*\*Code\*\* button, then \*\*Download ZIP\*\*, and unzip it into `C:\\dev`. This works for running the app, but you cannot `git pull` or `git push` updates without Git.
+---
 
-### Step 3: Create your own virtual environment and install the libraries
+### Step 3: Create Your Virtual Environment & Install Dependencies
 
-A virtual environment (venv) keeps this project's libraries separate from the rest of your laptop. **Everyone makes their own. Never copy someone else's `venv` folder.**
+A virtual environment (`venv`) keeps project packages isolated. **Everyone creates their own on their machine. Never copy or commit a `venv` folder.**
 
-```
+```cmd
 python -m venv venv
-venv\\Scripts\\activate
+venv\Scripts\activate
 python -m pip install -r requirements.txt
 ```
 
-- After the second command you should see `(venv)` at the start of the line.
-- The install takes a few minutes the first time.
-- If you use PowerShell and the activate command is blocked, use Command Prompt (cmd) instead.
+- When active, you will see `(venv)` at the beginning of your prompt line.
+- If you use PowerShell and get a script execution policy error, switch to **Command Prompt (cmd)**.
 
-### Step 4: Check that everything works
+---
 
+### Step 4: Set Up the Environment File (.env)
+
+The `.env` file holds sensitive configuration like staff credentials. Copy the example file:
+
+```cmd
+copy .env.example .env
 ```
+
+Default credentials inside `.env`:
+- **Username:** `staff`
+- **Password:** `kll2026`
+
+---
+
+### Step 5: Check Installation & Seed Sample Data
+
+Run the test script to ensure all libraries (Flask, scikit-learn, etc.) are installed properly:
+
+```cmd
 python test.py
 ```
 
-You should see a row of three numbers (about `1.0  0.63  0.0`) and a line with the Flask, pandas, and scikit-learn versions. A harmless warning about `flask.\_\_version\_\_` may appear. If you see the numbers, your setup is complete.
+If it prints version numbers and similarity scores with no errors, initialize the database with sample items:
 
-### Step 5: Run the app
-
+```cmd
+python seed_data.py
 ```
-python seed\_data.py
+
+---
+
+### Step 6: Run the App
+
+Start the Flask local development server:
+
+```cmd
 python app.py
 ```
 
-- `seed\_data.py` adds 7 sample found items. Run it **once** (optional).
-- Open **http://127.0.0.1:5000** in your browser. You should see the home page with the lost and found lists.
-- To stop the app, click the Command Prompt window and press **Ctrl + C**.
+1. Open your browser and go to: **http://127.0.0.1:5000**
+2. You will see the KLL Smart Find AI homepage with active lost reports and found items.
+3. To stop the server at any time, go to the Command Prompt and press **Ctrl + C**.
 
-### Step 6: Try it
+---
 
-1. Click **I lost something**.
-2. Choose Calculator, Black, room Lab 2, and write the description `black calculator`.
-3. Click **Find possible matches**. The black scientific calculator found in Lab 2 should be ranked #1, with its score and reasons.
+## 2. Testing Features
 
-\---
+1. **Student Report Lost:** Click **"Report Lost Item"** on the navbar, fill in the details, and submit. The system will immediately display the **AI Matches** ranked by similarity.
+2. **Staff Login & Full CRUD:**
+   - Click **"Staff Portal"** in the top navigation.
+   - Log in with `staff` / `kll2026`.
+   - On the **Staff Dashboard**, you can:
+     - View KPI summary cards and Chart.js analytics graphs.
+     - **Edit** any item's category, location, custody, or status.
+     - **Delete** invalid or duplicate reports.
+     - Review **AI Matching Weight Refinement** learned from verified claims.
+     - **Export CSV** of all inventory records.
+3. **AI Accuracy Benchmark:**
+   Run the evaluation script to test Top-1 and Top-3 accuracy across 22 lost and 27 found benchmark reports:
+   ```cmd
+   python evaluate.py
+   ```
 
-## Working on the project
+---
 
-Every time you start working, open a new Command Prompt and run:
+## 3. Daily Team Workflow
 
-```
-cd C:\\dev\\kll-lost-and-found
-venv\\Scripts\\activate
+Every time you sit down to work:
+
+```cmd
+cd C:\dev\kll-lost-and-found
+venv\Scripts\activate
 git pull
+python app.py
 ```
 
-- `venv\\Scripts\\activate` must be run **every time** you open a new terminal. If you forget, you will get `No module named 'flask'`.
-- `git pull` downloads your teammates' latest work. Do it before you start.
+When you finish your changes:
 
-When you finish a piece of work:
-
-```
+```cmd
 git add .
-git commit -m "short message about what you changed"
-git push
+git commit -m "Describe what you updated"
+git push origin main
 ```
 
-Good habits:
+---
 
-- Pull before you start, and push often, so changes do not pile up.
-- Mostly edit your own files, to avoid conflicts.
-- If you add a new library, run `pip freeze > requirements.txt` and push it so everyone can install the same libraries.
-- Never upload the `venv` folder or the `findit.db` database. The `.gitignore` file already prevents this.
+## 4. Troubleshooting Guide
 
-## Troubleshooting
-
-| Problem                                                    | Fix                                                                                                                                          |
-| ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| `'python' is not recognized`, or the Microsoft Store opens | Python is not installed, or "Add python.exe to PATH" was not ticked. Run the Python installer again and choose Modify or Repair.             |
-| `'pip' is not recognized`                                  | Same cause. Use `python -m pip ...` or fix the Python install.                                                                               |
-| `No module named 'flask'`                                  | Your venv is not active or the libraries are not installed. Run `venv\\Scripts\\activate`, then `python -m pip install -r requirements.txt`. |
-| `(venv)` does not show                                     | Run `cd C:\\dev\\kll-lost-and-found`, then `venv\\Scripts\\activate`.                                                                                 |
-| `can't open file ... app.py`                               | You are in the wrong folder. Run `cd C:\\dev\\findit-ai`.                                                                                    |
-| Activate is blocked in PowerShell                          | Use Command Prompt (cmd) instead.                                                                                                            |
-| `pip install` fails or is very slow                        | Check your internet, and make sure you use Python 3.13.                                                                                      |
-| `python --version` shows the wrong version                 | Run `where python`. The first line is the one that runs. With `(venv)` active it should point inside the `venv` folder.                      |
-| Strange permission errors in `venv`                        | The project is inside OneDrive. Move it to `C:\\dev` and create a new venv.                                                                  |
-| Moved the project and the venv stopped working             | A venv remembers where it was created. Delete the `venv` folder (`rmdir /s /q venv`) and create a new one.                                   |
-| `git clone` asks for a password or fails with "not found"  | The repository is private. Ask the team lead to add you, accept the email invitation, and sign in with the browser window Git opens.         |
-| `git push` is rejected                                     | Someone pushed first. Run `git pull`, then `git push` again.                                                                                 |
-| Port 5000 is already in use                                | An older copy of the app is still running. Close its Command Prompt window, or press Ctrl + C in it.                                         |
-| The page does not load                                     | Check that `python app.py` is still running and open http://127.0.0.1:5000 (not https).                                                      |
-
-\---
-
-## Measuring how well it works
-
-`evaluate.py` runs the matching on test files in the `data/` folder and prints top-1 and top-3 accuracy for three methods: attribute only, text only, and combined.
-
-```
-python evaluate.py
-```
-
-| File                      | What it contains                                                                  |
-| ------------------------- | --------------------------------------------------------------------------------- |
-| `data/lost\_reports.csv`  | Fake lost reports (id, category, color, brand, description, location, event_time) |
-| `data/found\_reports.csv` | Fake found reports (same columns)                                                 |
-| `data/true\_matches.csv`  | The correct answers (lost_id, found_id)                                           |
-
-The sample files have only 5 lost and 7 found reports, and every method scores 100% because the cases are easy. For the real evaluation, the group should write 50 to 100 reports with 30 to 40 known pairs, including harder cases: different wording for the same item, blank brands, different rooms, and look-alike items.
+| Problem | Cause & Fix |
+|---|---|
+| `'python' is not recognized` or Microsoft Store opens | Python was not added to PATH. Rerun the Python installer, select **Modify**, and check **"Add python.exe to PATH"**. |
+| `No module named 'flask'` | Your virtual environment is not active. Run `venv\Scripts\activate` first. |
+| `(venv)` is missing from prompt | You forgot to activate it. Run `cd C:\dev\kll-lost-and-found` then `venv\Scripts\activate`. |
+| `can't open file 'app.py': [Errno 2] No such file or directory` | You are in the wrong directory. Run `cd C:\dev\kll-lost-and-found`. |
+| `Address already in use` (Port 5000) | Another copy of `app.py` is already running. Close the previous Command Prompt window or press **Ctrl + C**. |
+| `git clone` fails with 403 or password error | The repository is private. Ask the project owner to invite your GitHub account as a collaborator. |
+| Staff login says "Incorrect username or password" | Ensure you created `.env` by running `copy .env.example .env`. Default login is `staff` / `kll2026`. |
+| PowerShell blocks `activate.ps1` | Run `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser` in PowerShell, or simply use Command Prompt (`cmd.exe`). |

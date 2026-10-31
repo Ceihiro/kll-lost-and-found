@@ -363,6 +363,7 @@
           <th>Lost Report</th>
           <th>Found Item Inspected</th>
           <th>Staff Notes</th>
+          <th>Action</th>
         </tr>
       </thead>
       <tbody>
@@ -391,6 +392,15 @@
             </small>
           </td>
           <td><small>{{ c.notes or '—' }}</small></td>
+          <td class="cell-actions">
+            <form method="post" action="{{ url_for('revert_claim', claim_id=c.id) }}" class="inline-form"
+                  onsubmit="return confirm('This action will undo/revert this claim and re-open both items in the public list. Proceed?');">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button type="submit" class="dash-action-btn dash-action-btn--amber" style="white-space: nowrap;" title="Undo accidental claim verification">
+                &#x21ba; Undo / Revert
+              </button>
+            </form>
+          </td>
         </tr>
         {% endfor %}
       </tbody>

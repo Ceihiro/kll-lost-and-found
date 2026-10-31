@@ -99,19 +99,46 @@ python evaluate.py
 
 ---
 
-## Project Structure
+## Project Structure (3-Tier Architecture)
 
-| File / Folder | Purpose | Team Role |
+The codebase is organized into three distinct layers so that anyone reviewing the project immediately understands what runs the app versus what supports testing and documentation:
+
+### Tier 1: Core System (Live Application)
+These files and directories form the functional web portal and Intelligent System:
+
+| File / Directory | Layer | Purpose |
 |---|---|---|
-| `app.py` | Flask routes, form validation, CSRF & authentication guards | Backend Developer |
-| `db.py` | SQLite database schema, CRUD operations, analytics aggregation, and ML feedback calculator | Database Designer |
-| `matching.py` | Hybrid matching engine: rule weights, Taglish translation, TF-IDF cosine ranking | NLP / AI Reviewer |
-| `config.py` | Central configuration: categories, locations, colors, and initial attribute weights | Systems Analyst |
-| `evaluate.py` | Automated Top-1 and Top-3 accuracy benchmark test harness | QA Tester |
-| `data/` | Benchmark test datasets (`lost_reports.csv`, `found_reports.csv`, `true_matches.csv`) | Data Collector |
-| `templates/` | Jinja2 templates (dashboard, forms, matches, home) | UI/UX Designer |
-| `static/style.css` | Institutional design system, BBGU header/footer curves, responsive layouts | UI/UX Designer |
-| `seed_data.py` | Database seeder for demo & testing | Backend Developer |
+| `app.py` | Web Controller | Primary Flask application defining all public and staff routes, CSRF guards, and session authentication. |
+| `matching.py` | AI / NLP Engine | Core intelligent matching engine (Taglish normalization, attribute scoring, TF-IDF cosine similarity). |
+| `db.py` | Database Layer | SQLite operations: item CRUD, claim logging, status transitions, and machine learning feedback calculations. |
+| `config.py` | System Settings | Centralized settings: campus room names, item categories, color palettes, and AI weight presets. |
+| `templates/` | View Templates | Jinja2 HTML templates (`index.html`, `lost.html`, `found.html`, `matches.html`, `staff_dashboard.html`, `staff_edit.html`). |
+| `static/` | UI Assets | Institutional stylesheet (`style.css`), campus emblems (`KLL-logo.webp`), and visual assets. |
+| `kll-lost-and-found.db` | Data Persistence | SQLite database storing active lost/found records and verification audit history. |
+| `.env` | Local Secrets | Environment credentials (`STAFF_USERNAME`, `STAFF_PASSWORD`, `SECRET_KEY`). |
+
+### Tier 2: AI Evaluation & QA Harness
+Standalone test tools used to validate algorithm precision and seed demo records:
+
+| File / Directory | Layer | Purpose |
+|---|---|---|
+| `evaluate.py` | Benchmark Harness | Automated offline test script calculating Top-1 and Top-3 accuracy across sample pairs. |
+| `data/` | Evaluation Dataset | CSV files (`lost_reports.csv`, `found_reports.csv`, `true_matches.csv`) tested by `evaluate.py`. |
+| `seed_data.py` | Data Seeder | Populates initial campus items into the database for demonstration. |
+| `test.py` | Smoke Test | Validates that required ML libraries (scikit-learn, Flask, pandas) are installed and working. |
+
+### Tier 3: Repository, Collaboration & Documentation
+Artifacts supporting open-source collaboration, installation, and presentation:
+
+| File / Directory | Layer | Purpose |
+|---|---|---|
+| `README.md` | Portal Overview | Complete system documentation, benchmark results, and route specifications. |
+| `SETUP.md` | Setup Guide | Step-by-step developer setup and troubleshooting guide for teammates. |
+| `requirements.txt` | Dependencies | Pip requirements manifest for reproducible environment creation. |
+| `.gitignore` | Git Rules | Excludes virtual environments, database binaries, and local `.env` files from Git. |
+| `.env.example` | Config Template | Reference template for creating local `.env` configuration. |
+| `docs/` | Media & Docs | Screenshots and project imagery used across documentation. |
+| `KLL-Lost-and-Found-docs/` | Internal Archive | Internal project deliverables (proposal docx, team roles, daily logs). |
 
 ---
 

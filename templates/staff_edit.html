@@ -48,7 +48,7 @@
           {% endfor %}
         </select>
         <div id="category-other-wrap" style="{% if not cat_is_other %}display: none;{% endif %} margin-top: 0.5rem;">
-          <input name="category_other" id="field-category-other" value="{{ cat_other_text }}" placeholder="Specify item category (e.g. Earphones, Jacket, Helmet)">
+          <input name="category_other" id="field-category-other" value="{{ cat_other_text }}" maxlength="60" placeholder="Specify item category (e.g. Earphones, Jacket, Helmet)">
         </div>
       </label>
 
@@ -66,18 +66,18 @@
           {% endfor %}
         </select>
         <div id="color-other-wrap" style="{% if not col_is_other %}display: none;{% endif %} margin-top: 0.5rem;">
-          <input name="color_other" id="field-color-other" value="{{ col_other_text }}" placeholder="Specify color (e.g. Teal, Maroon, Camouflage)">
+          <input name="color_other" id="field-color-other" value="{{ col_other_text }}" maxlength="60" placeholder="Specify color (e.g. Teal, Maroon, Camouflage)">
         </div>
       </label>
 
       {# Brand #}
       <label>Brand (optional)
-        <input name="brand" value="{{ item.brand or '' }}" placeholder="e.g. Casio, Apple, Hydro Flask">
+        <input name="brand" value="{{ item.brand or '' }}" maxlength="50" placeholder="e.g. Casio, Apple, Hydro Flask">
       </label>
 
       {# Description #}
       <label>Description
-        <textarea name="description" id="field-desc" rows="3" required maxlength="500" placeholder="Detailed physical description">{{ item.description or '' }}</textarea>
+        <textarea name="description" id="field-desc" rows="3" required minlength="10" maxlength="500" placeholder="Detailed physical description">{{ item.description or '' }}</textarea>
         <small style="color: var(--muted); font-size: 0.8125rem; font-weight: normal; margin-top: -0.2rem;"><span id="desc-count">{{ (item.description or '') | length }}</span> / 500 characters</small>
       </label>
 
@@ -95,26 +95,26 @@
           {% endfor %}
         </select>
         <div id="location-other-wrap" style="{% if not loc_is_other %}display: none;{% endif %} margin-top: 0.5rem;">
-          <input name="location_other" id="field-location-other" value="{{ loc_other_text }}" placeholder="Specify room or area (e.g. Canteen, Library, Gym, Gate 1)">
+          <input name="location_other" id="field-location-other" value="{{ loc_other_text }}" maxlength="60" placeholder="Specify room or area (e.g. Canteen, Library, Gym, Gate 1)">
         </div>
       </label>
 
       {# Date and Time #}
       <label>Date and time
-        <input type="datetime-local" name="event_time" id="field-event-time" value="{{ item.event_time }}" required>
+        <input type="datetime-local" name="event_time" id="field-event-time" value="{{ item.event_time }}" min="{{ min_date }}T00:00" max="{{ now }}" required>
       </label>
 
       {# Kind-specific fields #}
       {% if item.kind == 'lost' %}
         <label>Reporter / Student Contact Info
-          <input name="contact" value="{{ item.contact or '' }}" placeholder="Student Name | ID Number | Program / Section">
+          <input name="contact" value="{{ item.contact or '' }}" maxlength="150" placeholder="Student Name | ID Number | Program / Section">
         </label>
       {% else %}
         <label>Where is it kept now? (Storage place)
-          <input name="storage_place" value="{{ item.storage_place or '' }}" placeholder="e.g. Faculty room cabinet, Guard house shelf">
+          <input name="storage_place" value="{{ item.storage_place or '' }}" maxlength="100" placeholder="e.g. Faculty room cabinet, Guard house shelf">
         </label>
         <label>Private verification detail (hidden from public)
-          <input name="private_detail" value="{{ item.private_detail or '' }}" placeholder="e.g. sticker on the back, custom keychain, engraved initials">
+          <input name="private_detail" value="{{ item.private_detail or '' }}" maxlength="200" placeholder="e.g. sticker on the back, custom keychain, engraved initials">
         </label>
       {% endif %}
 
@@ -162,4 +162,3 @@ function handleSelectOther(selectEl, wrapId) {
 })();
 </script>
 {% endblock %}
-

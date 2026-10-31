@@ -369,3 +369,28 @@ def record_claim(lost_id, found_id, outcome, notes=""):
                 "UPDATE items SET status = 'returned' WHERE id IN (?, ?)",
                 (lost_id, found_id),
             )
+
+
+def revert_claim(claim_id):
+    """Revert a claim verification record (corrects staff human error).
+
+    If the claim was 'Verified', reopens both the lost and found items
+    (sets status back to 'open') so they reappear on the public lists.
+    Deletes the claim record so AI feedback weights are not skewed.
+    """
+    with get_conn() as conn:
+        claim = conn.execute(
+            "SELECT lost_id, found_id, outcome FROM claims WHERE id = ?",
+            (claim_id,)
+        ).fetchone()
+        if not claim:
+            return False
+
+        if claim["outcome"] == "Verified":
+            conn.execute(
+                "UPDATE items SET status = 'open' WHERE id IN (?, ?)",
+                (claim["lost_id"], claim["found_id"]),
+            )
+
+        conn.execute("DELETE FROM claims WHERE id = ?", (claim_id,))
+        return True

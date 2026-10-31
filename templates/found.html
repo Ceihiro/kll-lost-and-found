@@ -1,16 +1,345 @@
 {% extends "base.html" %}
-{% block title %}Log a found item{% endblock %}
+
+{% block title %}Log Found Item — KLL Smart Find AI{% endblock %}
+
+{% block main_class %}page-main--form container{% endblock %}
+
 {% block content %}
-<h1>Log a found item</h1>
-<form method="post">
-  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-  {% include "_fields.html" %}
-  <label>Where is it kept now?
-    <input name="storage_place" placeholder="e.g. Faculty room cabinet">
-  </label>
-  <label>Private detail (hidden from the public)
-    <input name="private_detail" placeholder="e.g. sticker on the back, scratch, name inside">
-  </label>
-  <button type="submit">Save found item</button>
-</form>
+<div class="portal-form-container">
+  <div class="portal-form-header">
+    <h1 class="portal-form-title">Log Found Item</h1>
+    <p class="portal-form-intro">
+      Please complete the form below to register an item found on campus. All found items are safely cross-referenced against student loss reports to locate the rightful owner.
+    </p>
+  </div>
+
+  <form method="post" action="{{ url_for('log_found') }}" class="portal-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+    <!-- ── SECTION 1: FINDER INFORMATION ──────────────────────────────── -->
+    <section class="portal-section">
+      <div class="portal-section-header">
+        <h2 class="portal-section-title">Finder Information</h2>
+      </div>
+      <div class="portal-section-divider"></div>
+
+      <!-- Who are you? -->
+      <div class="portal-grid-1">
+        <div class="portal-group">
+          <label class="portal-label" for="field-role">
+            Who are you? <span class="portal-req">(Required)</span>
+          </label>
+          <select name="reporter_role" id="field-role" required>
+            <option value="Student" selected>Student</option>
+            <option value="Faculty">Faculty</option>
+            <option value="Campus Guard">Campus Guard</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Name: First Name | Last Name -->
+      <div class="portal-grid-2">
+        <div class="portal-group">
+          <label class="portal-label" for="field-first-name">
+            First Name <span class="portal-req">(Required)</span>
+          </label>
+          <input
+            type="text"
+            name="first_name"
+            id="field-first-name"
+            placeholder="e.g. Maria"
+            maxlength="50"
+            pattern="^[A-Za-z\s\.\-']+$"
+            title="Letters, spaces, and hyphens only"
+            autocomplete="given-name"
+            required
+          />
+        </div>
+        <div class="portal-group">
+          <label class="portal-label" for="field-last-name">
+            Last Name <span class="portal-req">(Required)</span>
+          </label>
+          <input
+            type="text"
+            name="last_name"
+            id="field-last-name"
+            placeholder="e.g. Santos"
+            maxlength="50"
+            pattern="^[A-Za-z\s\.\-']+$"
+            title="Letters, spaces, and hyphens only"
+            autocomplete="family-name"
+            required
+          />
+        </div>
+      </div>
+    </section>
+
+    <!-- ── SECTION 2: FOUND PROPERTY INFORMATION ──────────────────────── -->
+    <section class="portal-section">
+      <div class="portal-section-header">
+        <h2 class="portal-section-title">Found Property Information</h2>
+      </div>
+      <div class="portal-section-divider"></div>
+
+      <!-- Row 1: Found Property Date | Found Property Time -->
+      <div class="portal-grid-2">
+        <div class="portal-group">
+          <label class="portal-label" for="field-date">
+            Found Property Date <span class="portal-req">(Required)</span>
+          </label>
+          <input
+            type="date"
+            name="event_date"
+            id="field-date"
+            value="{{ now_date }}"
+            min="{{ min_date }}"
+            max="{{ now_date }}"
+            required
+          />
+        </div>
+        <div class="portal-group">
+          <label class="portal-label" for="field-time">
+            Found Property Time <span class="portal-req">(Required)</span>
+          </label>
+          <input
+            type="time"
+            name="event_time_clock"
+            id="field-time"
+            value="{{ now_time }}"
+            required
+          />
+        </div>
+      </div>
+
+      <!-- Row 2: Found Property Type | Found At Location -->
+      <div class="portal-grid-2">
+        <div class="portal-group">
+          <label class="portal-label" for="field-category">
+            Found Property Type <span class="portal-req">(Required)</span>
+          </label>
+          <select
+            name="category"
+            id="field-category"
+            required
+            onchange="handleSelectOther(this, 'category-other-wrap')"
+          >
+            {% for c in cfg.CATEGORIES %}
+            <option value="{{ c }}">{{ c }}</option>
+            {% endfor %}
+          </select>
+          <div id="category-other-wrap" class="portal-other-wrap" style="display: none;">
+            <input
+              type="text"
+              name="category_other"
+              id="field-category-other"
+              maxlength="60"
+              placeholder="Specify item type (e.g. Earphones, Jacket, Helmet)"
+            />
+          </div>
+        </div>
+
+        <div class="portal-group">
+          <label class="portal-label" for="field-location">
+            Found At Location <span class="portal-req">(Required)</span>
+          </label>
+          <select
+            name="location"
+            id="field-location"
+            required
+            onchange="handleSelectOther(this, 'location-other-wrap')"
+          >
+            {% for l in cfg.LOCATIONS %}
+            <option value="{{ l }}">{{ l }}</option>
+            {% endfor %}
+          </select>
+          <div id="location-other-wrap" class="portal-other-wrap" style="display: none;">
+            <input
+              type="text"
+              name="location_other"
+              id="field-location-other"
+              maxlength="60"
+              placeholder="Specify room or area (e.g. Canteen, Library, Gym, Gate 1)"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Row 3: Color | Brand -->
+      <div class="portal-grid-2">
+        <div class="portal-group">
+          <label class="portal-label" for="field-color">
+            Primary Color <span class="portal-req">(Required)</span>
+          </label>
+          <select
+            name="color"
+            id="field-color"
+            required
+            onchange="handleSelectOther(this, 'color-other-wrap')"
+          >
+            {% for c in cfg.COLORS %}
+            <option value="{{ c }}">{{ c }}</option>
+            {% endfor %}
+          </select>
+          <div id="color-other-wrap" class="portal-other-wrap" style="display: none;">
+            <input
+              type="text"
+              name="color_other"
+              id="field-color-other"
+              maxlength="60"
+              placeholder="Specify color (e.g. Teal, Maroon, Camouflage)"
+            />
+          </div>
+        </div>
+
+        <div class="portal-group">
+          <label class="portal-label" for="field-brand">
+            Brand <span class="portal-opt">(Optional)</span>
+          </label>
+          <input
+            type="text"
+            name="brand"
+            id="field-brand"
+            maxlength="50"
+            placeholder="e.g. Casio, Apple, Hydro Flask"
+          />
+        </div>
+      </div>
+
+      <!-- Row 4: Detailed Description -->
+      <div class="portal-grid-1">
+        <div class="portal-group">
+          <label class="portal-label" for="field-desc">
+            Detailed Description <span class="portal-req">(Required)</span>
+          </label>
+          <textarea
+            name="description"
+            id="field-desc"
+            rows="4"
+            minlength="10"
+            maxlength="500"
+            required
+            placeholder="Describe physical appearance, noticeable wear, or visible stickers..."
+          ></textarea>
+          <div class="portal-char-counter">
+            <span id="desc-count">0</span> / 500 characters
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── SECTION 3: CUSTODY & VERIFICATION ──────────────────────────── -->
+    <section class="portal-section">
+      <div class="portal-section-header">
+        <h2 class="portal-section-title">Custody &amp; Security Verification</h2>
+      </div>
+      <div class="portal-section-divider"></div>
+
+      <div class="portal-grid-2">
+        <div class="portal-group">
+          <label class="portal-label" for="field-storage">
+            Where is it kept now? <span class="portal-req">(Required)</span>
+          </label>
+          <input
+            type="text"
+            name="storage_place"
+            id="field-storage"
+            placeholder="e.g. Faculty room cabinet, Guard house shelf"
+            maxlength="100"
+            required
+          />
+        </div>
+
+        <div class="portal-group">
+          <label class="portal-label" for="field-private">
+            Private Verification Detail <span class="portal-opt">(Hidden from Public)</span>
+          </label>
+          <input
+            type="text"
+            name="private_detail"
+            id="field-private"
+            maxlength="200"
+            placeholder="e.g. sticker on back, serial number, engraved name inside"
+          />
+          <small class="portal-field-hint">Used by staff to verify the genuine owner before releasing the item.</small>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── SUBMIT BUTTON ─────────────────────────────────────────────── -->
+    <div class="portal-submit-row">
+      <button type="submit" class="portal-btn-submit">
+        Submit Found Item Report
+      </button>
+    </div>
+  </form>
+</div>
+
+<script>
+function handleSelectOther(selectEl, wrapId) {
+  var wrap = document.getElementById(wrapId);
+  if (!wrap) return;
+  if (selectEl.value === 'Other') {
+    wrap.style.display = 'block';
+    var inp = wrap.querySelector('input');
+    if (inp) inp.focus();
+  } else {
+    wrap.style.display = 'none';
+    var inp = wrap.querySelector('input');
+    if (inp) inp.value = '';
+  }
+}
+
+(function() {
+  var desc = document.getElementById('field-desc');
+  var cnt = document.getElementById('desc-count');
+  if (desc && cnt) {
+    desc.addEventListener('input', function() {
+      cnt.textContent = desc.value.length;
+    });
+    cnt.textContent = desc.value.length;
+  }
+
+  // Pre-initialize "Other" inputs if pre-selected
+  ['field-category', 'field-location', 'field-color'].forEach(function(id) {
+    var sel = document.getElementById(id);
+    if (sel && sel.value === 'Other') {
+      var wrapId = id.replace('field-', '') + '-other-wrap';
+      var wrap = document.getElementById(wrapId);
+      if (wrap) wrap.style.display = 'block';
+    }
+  });
+  // Enforce future time protection if date selected is today
+  var dateEl = document.getElementById('field-date');
+  var timeEl = document.getElementById('field-time');
+  var todayStr = '{{ now_date }}';
+  var nowTimeStr = '{{ now_time }}';
+
+  function syncTimeMax() {
+    if (dateEl && timeEl) {
+      if (dateEl.value === todayStr) {
+        timeEl.max = nowTimeStr;
+        if (timeEl.value && timeEl.value > nowTimeStr) {
+          timeEl.value = nowTimeStr;
+        }
+      } else {
+        timeEl.removeAttribute('max');
+      }
+    }
+  }
+  if (dateEl) {
+    dateEl.addEventListener('change', syncTimeMax);
+    syncTimeMax();
+  }
+
+  // Active validation: Name inputs accept letters, spaces, and hyphens only
+  ['field-first-name', 'field-last-name'].forEach(function(fieldId) {
+    var nameInput = document.getElementById(fieldId);
+    if (nameInput) {
+      nameInput.addEventListener('input', function() {
+        this.value = this.value.replace(/[^A-Za-z\s\.\-']/g, '');
+      });
+    }
+  });
+})();
+</script>
 {% endblock %}

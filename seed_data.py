@@ -43,6 +43,13 @@ if found_file.exists():
 # 2. Load a few sample lost reports (first 5) so the home page shows both sides
 lost_file = DATA_DIR / "lost_reports.csv"
 lost_count = 0
+sample_contacts = [
+    "Maria Santos | (Student) | ID: 2023-01452 | BSCS 2B",
+    "John Carlo Reyes | (Student) | ID: 2022-00891 | BSCS 3A",
+    "Prof. Aris Dela Cruz | (Faculty) | ID: 2018-00045 | DCS",
+    "Bea Nicole Mendoza | (Student) | ID: 2024-03120 | BSED 1A",
+    "Mark Anthony Ramos | (Student) | ID: 2021-00673 | BSCpE 4A",
+]
 if lost_file.exists():
     with open(lost_file, newline="", encoding="utf-8") as f:
         for i, row in enumerate(csv.DictReader(f)):
@@ -56,7 +63,7 @@ if lost_file.exists():
                 description=row["description"],
                 location=row["location"],
                 event_time=row["event_time"],
-                contact="student@kll.edu.ph",
+                contact=sample_contacts[i % len(sample_contacts)],
             )
             lost_count += 1
 

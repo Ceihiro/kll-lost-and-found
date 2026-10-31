@@ -229,8 +229,8 @@
           <h3>Lost something? Post it in a minute</h3>
           <p>
             Tell us what you lost, its color, and where you last had it (like
-            Lab 2, Room 101, or the Hallway). No account or sign-up needed—just
-            fill out the quick form and you're done.
+            Room 101, or the Hallway). No account or sign-up needed—just fill
+            out the quick form and you're done.
           </p>
         </div>
       </div>
@@ -241,8 +241,8 @@
           <h3>Found an item? Help a classmate out</h3>
           <p>
             Picked up an umbrella, tumbler, calculator, or student ID? Log it
-            here, then surrender it to the campus guard or guidance office. We
-            keep private details hidden so only the real owner can claim it.
+            here, then surrender it to the office. We keep private details
+            hidden so only the real owner can claim it.
           </p>
         </div>
       </div>
@@ -266,7 +266,7 @@
           <p>
             See a match that looks like yours? Go to the office. Simply describe
             a private detail only you know (like your wallpaper, specific
-            stickers, or scratches) to verify ownership and take it home!
+            stickers, or scratches) to verify ownership and take it!
           </p>
         </div>
       </div>
@@ -290,83 +290,108 @@
     <div class="faq-list">
       <details class="faq-item">
         <summary class="faq-question">
-          How does the AI know which found item matches my lost report?
+          How does the system match my lost item with found items?
         </summary>
         <div class="faq-answer">
-          <p>
-            The system uses a <strong>Hybrid AI matching engine</strong>. It
-            compares your report against all logged found items using two
-            methods at the same time: (1) rule-based attribute matching —
-            category, color, brand, location, and time window; and (2) NLP text
-            similarity using TF-IDF and Cosine Similarity. The final score is a
-            50/50 combination. The Top 3 most likely matches are shown to you
-            with an explanation of why they matched.
+          <p class="faq-lead">
+            When you submit a report, our system automatically compares it against all logged found items in two ways:
           </p>
+          <ul class="faq-points">
+            <li>
+              <strong>Item Details:</strong> It checks if the category, color, brand, location, and date line up.
+            </li>
+            <li>
+              <strong>Word &amp; Text Similarity:</strong> It reads what you wrote in your description and calculates word overlap with found reports.
+            </li>
+            <li>
+              <strong>Top 3 Recommendations:</strong> It calculates a combined match score and shows you the 3 most likely items, saving you from searching through every single post.
+            </li>
+          </ul>
         </div>
       </details>
 
       <details class="faq-item">
         <summary class="faq-question">
-          Can I report my lost item in Tagalog or Taglish?
+          Can I write my report in Tagalog or Taglish?
         </summary>
         <div class="faq-answer">
-          <p>
-            Yes! The system is designed to understand common Tagalog and Taglish
-            descriptions. Words like <em>payong</em>, <em>calcu</em>,
-            <em>tumbler</em>, <em>itim</em>, <em>pula</em>,
-            <em>may sticker</em>, and popular Filipino brands like
-            <em>AquaFlask</em> and <em>Bavin</em> are all recognized and matched
-            correctly. You can also write in English — both work.
+          <p class="faq-lead">
+            <strong>Yes, definitely!</strong> Feel free to write naturally in English, Tagalog, or a mix of both:
           </p>
+          <ul class="faq-points">
+            <li>
+              Everyday Filipino campus terms like <em>payong</em>, <em>calcu</em>, <em>tumbler</em>, <em>itim</em>, <em>pula</em>, or <em>may sticker</em> are recognized automatically.
+            </li>
+            <li>
+              Popular student brands (such as <em>AquaFlask</em>, <em>Casio</em>, or <em>Bavin</em>) are detected even with common abbreviations or quick shorthand.
+            </li>
+          </ul>
         </div>
       </details>
 
       <details class="faq-item">
         <summary class="faq-question">
-          How do I claim a found item that matches mine?
+          How do I claim an item that matches mine?
         </summary>
         <div class="faq-answer">
-          <p>
-            Go to the matches page for your lost report. If a found item looks
-            like yours, bring yourself to the campus office or the guard who
-            found it. A staff member will ask you to describe a private detail
-            about the item — for example, what is on your lock screen, a
-            specific sticker, or a hidden mark. This is kept secret from the
-            public to prevent false claims. If you correctly describe it, the
-            staff member marks the claim as <strong>Verified</strong> and you
-            get your item back.
+          <p class="faq-lead">
+            Recovering your item is quick and safe for everyone:
           </p>
+          <ol class="faq-steps">
+            <li>
+              <strong>Check Your Results:</strong> View your AI matches to see which found item looks like yours.
+            </li>
+            <li>
+              <strong>Visit the Office:</strong> Head over to the Campus Guard post or the faculty office where the item is kept.
+            </li>
+            <li>
+              <strong>Provide Your Secret Detail:</strong> Staff will ask you to describe a private detail that only the true owner would know (such as your phone lockscreen wallpaper, stickers on the back, or internal scratches). This detail is kept hidden from public view to prevent wrong claims.
+            </li>
+            <li>
+              <strong>Claim Your Property:</strong> Once verified, staff logs the confirmation and hands your item back to you.
+            </li>
+          </ol>
         </div>
       </details>
 
       <details class="faq-item">
         <summary class="faq-question">
-          What happens if nobody claims a found item after 30 days?
+          What happens to items that nobody claims after 30 days?
         </summary>
         <div class="faq-answer">
-          <p>
-            Found items that remain unclaimed for more than 30 days appear in
-            the staff dashboard's overdue reminders list. The staff can then
-            decide to mark the item as <strong>Unclaimed</strong>, which removes
-            it from the public listing. The item record is never deleted — it
-            remains in the system audit log for reference.
+          <p class="faq-lead">
+            If a found item sits unclaimed for more than a month:
           </p>
+          <ul class="faq-points">
+            <li>
+              It appears in the staff dashboard's <strong>Overdue List</strong> so campus administrators can follow up.
+            </li>
+            <li>
+              Staff can mark it as <strong>Unclaimed</strong> to keep the public list clean and focused on recent items.
+            </li>
+            <li>
+              The record is never deleted from the system, so if you return later to look for it, staff can still look up where it is stored.
+            </li>
+          </ul>
         </div>
       </details>
 
       <details class="faq-item">
         <summary class="faq-question">
-          Is my personal contact information visible to the public?
+          Is my student ID or contact information visible to anyone?
         </summary>
         <div class="faq-answer">
-          <p>
-            No. Contact details, private item descriptions (e.g., a hidden
-            identifying mark), and storage location are
-            <strong>never shown</strong> on the public pages. They are only
-            visible to authorized staff who are logged in. The public listing
-            only shows general information like category, color, and general
-            location.
+          <p class="faq-lead">
+            <strong>No, your personal privacy is completely protected:</strong>
           </p>
+          <ul class="faq-points">
+            <li>
+              The public website only shows basic item details (such as the item type, color, description, and where it was found).
+            </li>
+            <li>
+              Your <strong>name, student ID, course/section, and contact details</strong> are strictly hidden from students and can only be seen by authorized staff when logged into the portal.
+            </li>
+          </ul>
         </div>
       </details>
     </div>
